@@ -3,6 +3,7 @@ import { abTestEvaluate } from "./ab_test_evaluate";
 import { abTestPlan } from "./ab_test_plan";
 import { budgetOptimize } from "./budget_optimize";
 import { budgetSimulate } from "./budget_simulate";
+import { customerRfm } from "./customer_rfm";
 import { emailTestAnalyze } from "./email_test_analyze";
 import { storeSales } from "./store_sales";
 
@@ -14,4 +15,5 @@ export const TOOLS: ToolSpec[] = [
   budgetSimulate,
   budgetOptimize,
   storeSales,
+  customerRfm,
 ];

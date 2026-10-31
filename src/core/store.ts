@@ -42,7 +42,7 @@ export type StoreSalesResult = {
   source: string;
 };
 
-export const SALES_SOURCE =
+export const OLIST_SOURCE =
   "Olist, Brazilian E-Commerce Public Dataset, Kaggle (CC BY-NC-SA 4.0), aggregated";
 
 const DEFAULT_TOP = 10;
@@ -104,7 +104,7 @@ export function queryStoreSales(
     groups: 0,
     total: { orders: 0, revenue: 0 },
     warnings,
-    source: SALES_SOURCE,
+    source: OLIST_SOURCE,
   });
 
   let categoryIndex = -1;
@@ -226,6 +226,6 @@ export function queryStoreSales(
     groups,
     total: { orders: totalOrders, revenue: round(totalRevenue, 2) },
     warnings,
-    source: SALES_SOURCE,
+    source: OLIST_SOURCE,
   };
 }

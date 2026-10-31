@@ -1,0 +1,66 @@
+/*
+ * A two-colour risograph lab print. Every comparison on the page is control vs variant, so there
+ * are exactly two inks: ink A (control, "before", the recording) is blue and ink B (variant,
+ * "after", the live run) is pink. Where they overlap they overprint (multiply on paper, screen on
+ * the dark sheet) and make a third colour. No other hue is allowed on the page.
+ *
+ * Contrast rules that follow from these values (checked in the Task 12 report):
+ * - Body text is always --ink or --muted. Neither ink is used for running text.
+ * - Text on an ink fill uses --on-ink-a / --on-ink-b.
+ * - The focus ring uses ink A on the light sheet and ink B on the dark one (>= 3:1 each).
+ */
+:root {
+  color-scheme: light dark;
+
+  --paper: #ecefe8;
+  --ink: #1a1e29;
+  --ink-a: #2e5be8;
+  --ink-b: #ff4fa8;
+  --rule: #c7cdc2;
+  --muted: #5b6270;
+
+  --on-ink-a: #ecefe8;
+  --on-ink-b: #1a1e29;
+  --focus: var(--ink-a);
+  --overprint: multiply;
+
+  --font-display: "Big Shoulders Display", "Arial Narrow", sans-serif;
+  --font-body: "Schibsted Grotesk", system-ui, sans-serif;
+  --font-mono: "Martian Mono", ui-monospace, monospace;
+
+  /* The whole type scale. Nothing else is allowed. */
+  --step-hero: 4.5rem;
+  --step-section: 2rem;
+  --step-lead: 1.125rem;
+  --step-body: 1rem;
+  --step-data: 0.8125rem;
+
+  --gutter: 16px;
+  --measure: 72rem;
+  --rule-width: 1.5px;
+  --reveal-ms: 400ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #14171f;
+    --ink: #e6e9e1;
+    --ink-a: rgb(46 91 232 / 0.9);
+    --ink-b: rgb(255 79 168 / 0.9);
+    --rule: #2c3240;
+    /* The brief gives no dark muted; #5B6270 is ~3:1 on the dark sheet, so this is the same
+       blue-grey lightened to pass AA. */
+    --muted: #8c93a0;
+
+    --on-ink-a: #e6e9e1;
+    --on-ink-b: #1a1e29;
+    --focus: var(--ink-b);
+    --overprint: screen;
+  }
+}
+
+@media (min-width: 640px) {
+  :root {
+    --gutter: 32px;
+  }
+}

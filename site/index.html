@@ -3,12 +3,106 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>marketing-lab-mcp</title>
+    <title>marketing-lab-mcp: marketing math your AI can call</title>
+    <meta
+      name="description"
+      content="An MCP server with nine marketing tools: A/B tests, budget splits, attribution and customer segments. Connect it to Claude and ask in plain words."
+    />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#ecefe8" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#14171f" media="(prefers-color-scheme: dark)" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='12' cy='16' r='9' fill='%232e5be8'/%3E%3Ccircle cx='20' cy='16' r='9' fill='%23ff4fa8' style='mix-blend-mode:multiply'/%3E%3C/svg%3E"
+    />
+    <script type="module" src="./src/main.ts"></script>
   </head>
   <body>
-    <main>
-      <h1>marketing-lab-mcp</h1>
-      <p>The interactive demo is coming soon.</p>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="masthead">
+      <div class="masthead__inner">
+        <a class="wordmark" href="./">marketing-lab-mcp</a>
+        <nav class="masthead__nav" aria-label="Sections">
+          <ul>
+            <li><a href="#transcripts">Transcripts</a></li>
+            <li><a href="#playground">Playground</a></li>
+            <li><a href="#connect">Connect</a></li>
+            <li><a data-repo-link href="https://github.com/hysmarcos/marketing-lab-mcp">Source</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" tabindex="-1">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero__copy">
+          <h1 id="hero-title" class="display hero__title">Marketing math your AI can call</h1>
+          <p class="hero__lead">
+            Nine marketing tools (A/B tests, budget splits, attribution, customer segments) that
+            Claude calls to run the numbers instead of guessing them.
+          </p>
+
+          <div class="urlbox" data-urlbox data-state="empty">
+            <span class="urlbox__label" id="urlbox-label">Server URL</span>
+            <div class="urlbox__row">
+              <output class="urlbox__value" aria-labelledby="urlbox-label" data-urlbox-value
+                >Live URL coming soon</output
+              >
+              <button class="button" type="button" data-urlbox-copy disabled>Copy URL</button>
+            </div>
+            <p class="urlbox__status" role="status" data-urlbox-status>
+              The public server is not deployed yet.
+              <a href="#connect-local">Run it on your machine</a> in the meantime.
+            </p>
+          </div>
+        </div>
+
+        <figure class="hero__demo" aria-labelledby="hero-demo-caption">
+          <figcaption class="hero__caption" id="hero-demo-caption">
+            What Claude sends when you ask
+          </figcaption>
+          <ol class="chat" data-hero-chat>
+            <li class="chat__item chat__item--user">
+              <p class="bubble">Did the variant really win?</p>
+            </li>
+          </ol>
+        </figure>
+      </section>
+
+      <section class="section" id="transcripts" aria-labelledby="transcripts-title">
+        <h2 class="display section__title" id="transcripts-title">Transcripts</h2>
+        <div class="section__body">
+          <p class="section__note">
+            Recorded conversations where Claude picks the tools on its own land here next.
+          </p>
+        </div>
+      </section>
+
+      <section class="section" id="playground" aria-labelledby="playground-title">
+        <h2 class="display section__title" id="playground-title">Playground</h2>
+        <div class="section__body">
+          <p class="section__note">
+            A form for each of the nine tools, running in your browser with no sign-up, lands here
+            next.
+          </p>
+        </div>
+      </section>
+
+      <section class="section" id="connect" aria-labelledby="connect-title">
+        <h2 class="display section__title" id="connect-title">Connect to your Claude</h2>
+        <div class="section__body" data-connect></div>
+      </section>
     </main>
+
+    <footer class="colophon">
+      <div class="colophon__inner">
+        <p>
+          Built by Marcos Hoyos. Code under the MIT license; each dataset keeps its own license,
+          listed in the
+          <a data-repo-link href="https://github.com/hysmarcos/marketing-lab-mcp">repository</a>.
+        </p>
+      </div>
+    </footer>
   </body>
 </html>

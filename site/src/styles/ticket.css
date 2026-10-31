@@ -1,0 +1,276 @@
+/*
+ * The tool ticket. Body = the recorded call, printed as a 10% screen of ink A. Stub = the live run,
+ * printed solid in ink B, torn off along a row of punched holes. The stamp overprints both.
+ *
+ * Layering: the stub is its own stacking context (z-index 0) so its holes cover the body edge; the
+ * two stamp layers sit above it (z-index 1) and the ink layer blends with what is underneath, so
+ * where the blue stamp crosses the pink stub it prints a third colour.
+ */
+.ticket {
+  --ticket-ground: var(--paper);
+  --stub-w: 8.75rem;
+  --hole: 3px;
+  --hole-pitch: 14px;
+  --notch: 11px;
+  --stamp-overlap: 3.75rem;
+  --stamp-blend: multiply;
+
+  container-type: inline-size;
+  font-family: var(--font-mono);
+  font-size: var(--step-data);
+  color: var(--ink);
+}
+
+@media (prefers-color-scheme: dark) {
+  .ticket {
+    /* Multiply on a dark sheet turns both inks to mud; keep the stamp opaque and legible. */
+    --stamp-blend: normal;
+  }
+}
+
+.ticket__sheet {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--stub-w);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* Body: the recording ------------------------------------------------------------------------ */
+.ticket__body {
+  min-width: 0;
+  padding: 1.125rem 1.5rem 1.25rem 1.25rem;
+  background: color-mix(in srgb, var(--ink-a) 10%, var(--ticket-ground));
+}
+
+.ticket__method {
+  margin: 0;
+  color: var(--muted);
+}
+
+.ticket__tool {
+  margin: 0.25rem 0 0.875rem;
+  font-size: var(--step-lead);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.ticket__args {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.ticket__arg {
+  display: contents;
+}
+
+.ticket__arg dt,
+.ticket__arg dd {
+  margin: 0;
+  padding: 0.3rem 0;
+  border-top: 1px solid color-mix(in srgb, var(--ink-a) 22%, var(--ticket-ground));
+}
+
+.ticket__arg dt {
+  padding-right: 1.25rem;
+  color: var(--muted);
+}
+
+.ticket__arg dd {
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+.ticket__empty {
+  margin: 0;
+  color: var(--muted);
+}
+
+/* Stub: the live run ------------------------------------------------------------------------- */
+.ticket__stub {
+  --focus: var(--on-ink-b);
+
+  position: relative;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  padding: 1.25rem 0.875rem;
+  background: var(--ink-b);
+  color: var(--on-ink-b);
+  text-align: center;
+}
+
+/* Punched holes along the tear line. */
+.ticket__stub::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 calc(var(--hole) * -1.75);
+  width: calc(var(--hole) * 3.5);
+  background:
+    radial-gradient(circle, var(--ticket-ground) var(--hole), transparent calc(var(--hole) + 0.5px))
+    center / 100% var(--hole-pitch) repeat-y;
+}
+
+/* Half-moon notches where the tear line meets the edges. */
+.ticket__stub::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 calc(var(--notch) * -1);
+  width: calc(var(--notch) * 2);
+  background:
+    radial-gradient(
+      circle at 50% 0,
+      var(--ticket-ground) var(--notch),
+      transparent calc(var(--notch) + 0.5px)
+    ),
+    radial-gradient(
+      circle at 50% 100%,
+      var(--ticket-ground) var(--notch),
+      transparent calc(var(--notch) + 0.5px)
+    );
+}
+
+.ticket__run {
+  padding: 0.5rem 0.875rem;
+  border: var(--rule-width) solid currentColor;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: 600 var(--step-body) / 1.2 var(--font-body);
+  cursor: pointer;
+}
+
+.ticket__run:hover:not(:disabled) {
+  background: var(--on-ink-b);
+  color: var(--ink-b);
+}
+
+.ticket__run:disabled {
+  border-style: dashed;
+  cursor: not-allowed;
+}
+
+.ticket[aria-busy="true"] .ticket__run {
+  cursor: progress;
+}
+
+.ticket__note {
+  margin: 0;
+  font: 400 var(--step-data) / 1.35 var(--font-body);
+}
+
+.ticket__note:empty {
+  display: none;
+}
+
+/* Stamp -------------------------------------------------------------------------------------- */
+.ticket__stamp-slot {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ticket__stamp-slot:not(:empty) {
+  margin: 1rem calc(var(--stamp-overlap) * -1) 0 0;
+}
+
+.stamp {
+  --stamp-ink: var(--ink-a);
+  --stamp-on: var(--on-ink-a);
+
+  display: grid;
+  max-width: 17rem;
+}
+
+.stamp--differs {
+  --stamp-ink: var(--ink-b);
+  --stamp-on: var(--on-ink-b);
+}
+
+.stamp__ink,
+.stamp__text {
+  grid-area: 1 / 1;
+  position: relative;
+  z-index: 1;
+  transform: rotate(-4deg);
+}
+
+.stamp__ink {
+  border-radius: 4px;
+  background: var(--stamp-ink);
+  mix-blend-mode: var(--stamp-blend);
+}
+
+/* Pink multiplied over the blue tint drops dark text to 4.2:1, so the "differs" stamp prints
+   opaque. The overprint colour comes from the blue "matches" stamp crossing the pink stub. */
+.stamp--differs .stamp__ink {
+  mix-blend-mode: normal;
+}
+
+.stamp__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 4px;
+  padding: 0.375rem 0.75rem 0.4375rem;
+  border: var(--rule-width) solid currentColor;
+  border-radius: 2px;
+  color: var(--stamp-on);
+}
+
+.stamp__title {
+  font: 600 var(--step-body) / 1.25 var(--font-body);
+}
+
+.stamp__changed {
+  overflow-wrap: anywhere;
+}
+
+/* Narrow tickets tear along the bottom instead of the right ---------------------------------- */
+@container (max-width: 27rem) {
+  .ticket__sheet {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ticket__body {
+    padding-right: 1.25rem;
+  }
+
+  .ticket__stub {
+    align-items: flex-start;
+    padding: 1.125rem 1.25rem 1rem;
+    text-align: left;
+  }
+
+  .ticket__stub::before {
+    inset: calc(var(--hole) * -1.75) 0 auto 0;
+    width: auto;
+    height: calc(var(--hole) * 3.5);
+    background-size: var(--hole-pitch) 100%;
+    background-repeat: repeat-x;
+  }
+
+  .ticket__stub::after {
+    inset: calc(var(--notch) * -1) 0 auto 0;
+    width: auto;
+    height: calc(var(--notch) * 2);
+    background:
+      radial-gradient(
+        circle at 0 50%,
+        var(--ticket-ground) var(--notch),
+        transparent calc(var(--notch) + 0.5px)
+      ),
+      radial-gradient(
+        circle at 100% 50%,
+        var(--ticket-ground) var(--notch),
+        transparent calc(var(--notch) + 0.5px)
+      );
+  }
+
+  .ticket__stamp-slot:not(:empty) {
+    margin: 1rem -0.25rem calc(var(--stamp-overlap) * -0.6) 0;
+  }
+}

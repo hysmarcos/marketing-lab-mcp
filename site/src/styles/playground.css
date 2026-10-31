@@ -4,11 +4,6 @@
  * plan / model) and the message log (A = out, from the client; B = in, from the server).
  */
 
-/* The playground needs the whole measure, so its body runs under the section title. */
-.section--wide .section__body {
-  grid-column: 1 / -1;
-}
-
 .pg {
   display: flex;
   flex-direction: column;

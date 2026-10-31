@@ -4,6 +4,7 @@ import "./styles/base.css";
 
 import { LIVE_URL, REPO_URL } from "./config";
 import { renderConnect } from "./connect";
+import { setupHow } from "./how";
 import { canAnimate, EASE_OUT, EASE_SPRING, motionAllowed } from "./motion";
 import { runnerUnavailable, setPlaygroundStarter } from "./session";
 import { loadTranscript, mountTranscripts, renderHeroItems, TRANSCRIPT_IDS } from "./transcripts";
@@ -21,6 +22,7 @@ for (const link of document.querySelectorAll<HTMLAnchorElement>("[data-repo-link
 
 setupUrlBox(required<HTMLElement>("[data-urlbox]"), LIVE_URL);
 required<HTMLElement>("[data-connect]").append(renderConnect(LIVE_URL, REPO_URL));
+setupHow(required<HTMLElement>("[data-how]"));
 
 // The hero conversation plays after the opening print (base.css): messages arrive one by one on
 // a spring, and each tool ticket feeds out like a printed receipt. With reduced motion everything

@@ -381,6 +381,11 @@ code {
   min-width: 0;
 }
 
+/* Wide sections (how it works, the tools, the playground) run their body under the title. */
+.section--wide .section__body {
+  grid-column: 1 / -1;
+}
+
 .section__note {
   max-width: 52ch;
   color: var(--muted);

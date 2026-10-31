@@ -1,0 +1,541 @@
+/*
+ * "How it works": one createServer() on the left, three runtimes on the right, one wire each.
+ * As each step scrolls through the middle of the screen its lane lights up: the request
+ * (out, ink A, like the playground's message log) travels from the runtime to the server, the
+ * tool it names lights up in the server's list, and the result (in, ink B) travels back.
+ *
+ * The base rules below are the final state: every lane lit, every result delivered. That is what
+ * shows without JavaScript and with reduced motion. how.ts switches the scene to "scroll"
+ * (CSS scroll-driven animations, scrubbed by the scroll position) or "observer" (the same
+ * sequence on a timer, started by an IntersectionObserver) when motion is allowed.
+ */
+
+.how__intro {
+  max-width: 60ch;
+  font-size: var(--step-lead);
+  text-wrap: pretty;
+}
+
+.how__scene {
+  display: grid;
+  gap: 1.5rem 3rem;
+  margin-top: 2rem;
+}
+
+/* Stage ---------------------------------------------------------------------------------------- */
+.how__stage {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  grid-template-rows: repeat(3, auto);
+  align-items: center;
+  row-gap: 0.625rem;
+  padding-block: 0.75rem;
+  background: var(--paper);
+  font-family: var(--font-mono);
+  font-size: var(--step-data);
+}
+
+.how__server {
+  grid-row: 1 / span 3;
+  grid-column: 1;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border: var(--rule-width) solid var(--ink);
+  border-radius: 6px;
+}
+
+.how__call {
+  font-size: var(--step-data);
+  font-weight: 400;
+}
+
+.how__count {
+  color: var(--muted);
+}
+
+.how__tools {
+  display: none;
+  flex-direction: column;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.how__tools li {
+  position: relative;
+  isolation: isolate;
+  padding-inline: 0.375rem;
+  margin-inline: -0.375rem;
+}
+
+/* The tool the lane's message calls, marked like a highlighter pass in ink B. */
+.how__tools [data-hit] {
+  color: var(--ink);
+}
+
+.how__tools [data-hit]::before {
+  content: "";
+  position: absolute;
+  inset: 0.15em 0;
+  z-index: -1;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--ink-b) 32%, var(--paper));
+}
+
+.how__lane {
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 6.75rem;
+  align-items: center;
+  min-width: 0;
+}
+
+.how__wire {
+  position: relative;
+  height: 2rem;
+  overflow: clip;
+}
+
+/* The idle wire: a perforated rule, like the ticket's tear line. */
+.how__wire::before {
+  content: "";
+  position: absolute;
+  inset: calc(50% - 0.75px) 0 auto;
+  height: 1.5px;
+  background: repeating-linear-gradient(90deg, var(--rule) 0 6px, transparent 6px 10px);
+}
+
+/* The live wire: drawn from the runtime towards the server as the request travels. */
+.how__wire-ink {
+  position: absolute;
+  inset: calc(50% - 1px) 0 auto;
+  height: 2px;
+  background: var(--ink);
+  transform-origin: right center;
+}
+
+.how__travel {
+  position: absolute;
+  inset: 0;
+}
+
+.how__chip {
+  --chip-ink: var(--ink-a);
+  --chip-on: var(--on-ink-a);
+
+  position: absolute;
+  top: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.125rem 0.375rem 0.125rem 0.125rem;
+  border: 1px solid var(--chip-ink);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--chip-ink) 12%, var(--paper));
+  white-space: nowrap;
+  translate: 0 -50%;
+}
+
+.how__travel--out .how__chip {
+  left: 0;
+}
+
+.how__travel--in .how__chip {
+  --chip-ink: var(--ink-b);
+  --chip-on: var(--on-ink-b);
+
+  right: 0.375rem;
+}
+
+.how__dir {
+  padding: 0 0.3125rem;
+  border-radius: 3px;
+  background: var(--chip-ink);
+  color: var(--chip-on);
+}
+
+.how__chip-text {
+  display: none;
+}
+
+.how__node {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  padding: 0.5rem 0.625rem;
+  border: 1px solid var(--ink);
+  border-radius: 6px;
+  font-family: var(--font-body);
+  line-height: 1.25;
+}
+
+.how__node::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--ink-a) 12%, var(--paper));
+}
+
+.how__node strong {
+  font-size: var(--step-data);
+}
+
+.how__node span {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+}
+
+/* Final state: the request has arrived (hidden), the result sits at the runtime. */
+.how__travel--out {
+  opacity: 0;
+}
+
+/* Steps ---------------------------------------------------------------------------------------- */
+.how__steps {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.how__step {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.how__step-title {
+  font-size: var(--step-lead);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.how__step p {
+  max-width: 52ch;
+  text-wrap: pretty;
+}
+
+.how__msg {
+  max-width: 100%;
+  padding: 0.625rem 0.875rem;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--ink-a) 8%, var(--paper));
+  color: var(--ink);
+  font-size: var(--step-data);
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.how__msg code {
+  font-size: inherit;
+}
+
+/* While the scene moves, each step takes most of a screen so the lanes have room to play. */
+.how__scene:is([data-motion="scroll"], [data-motion="observer"]) .how__steps {
+  gap: 0;
+}
+
+.how__scene:is([data-motion="scroll"], [data-motion="observer"]) .how__step {
+  justify-content: center;
+  min-height: 78vh;
+  padding-block: 2rem;
+}
+
+/* Scrubbed by scroll ---------------------------------------------------------------------------- */
+@supports (animation-timeline: view()) and (timeline-scope: --how) {
+  .how__scene[data-motion="scroll"] {
+    timeline-scope: --how-1, --how-2, --how-3;
+  }
+
+  [data-motion="scroll"] [data-step="1"] {
+    view-timeline: --how-1 block;
+  }
+
+  [data-motion="scroll"] [data-step="2"] {
+    view-timeline: --how-2 block;
+  }
+
+  [data-motion="scroll"] [data-step="3"] {
+    view-timeline: --how-3 block;
+  }
+
+  [data-motion="scroll"] :is([data-lane="1"], [data-hit="1"]) {
+    --how-timeline: --how-1;
+  }
+
+  [data-motion="scroll"] :is([data-lane="2"], [data-hit="2"]) {
+    --how-timeline: --how-2;
+  }
+
+  [data-motion="scroll"] :is([data-lane="3"], [data-hit="3"]) {
+    --how-timeline: --how-3;
+  }
+
+  /* Pseudo-elements cannot go inside :is(), so they are listed on their own. */
+  [data-motion="scroll"] :is(.how__lane, .how__wire-ink, .how__travel),
+  [data-motion="scroll"] .how__node::before,
+  [data-motion="scroll"] .how__tools [data-hit]::before {
+    animation-duration: auto;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-timeline: var(--how-timeline);
+    animation-range: cover 24% cover 76%;
+  }
+
+  [data-motion="scroll"] .how__lane {
+    animation-name: how-lane;
+  }
+
+  [data-motion="scroll"] .how__wire-ink {
+    animation-name: how-wire;
+  }
+
+  [data-motion="scroll"] .how__travel--out {
+    animation-name: how-out;
+  }
+
+  [data-motion="scroll"] .how__travel--in {
+    animation-name: how-in-scrub;
+  }
+
+  [data-motion="scroll"] .how__node::before {
+    animation-name: how-node;
+  }
+
+  [data-motion="scroll"] .how__tools [data-hit]::before {
+    animation-name: how-hit;
+  }
+}
+
+@keyframes how-lane {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  10%,
+  90% {
+    opacity: 1;
+  }
+}
+
+@keyframes how-wire {
+  0%,
+  8% {
+    opacity: 1;
+    transform: scaleX(0);
+  }
+  42% {
+    transform: scaleX(1);
+  }
+  92% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes how-out {
+  0%,
+  8% {
+    opacity: 1;
+    transform: translateX(100%);
+  }
+  42% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  50%,
+  100% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+}
+
+@keyframes how-in-scrub {
+  0%,
+  52% {
+    transform: translateX(-100%);
+  }
+  84% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  96% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+}
+
+@keyframes how-in {
+  0%,
+  52% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes how-node {
+  0% {
+    opacity: 0;
+  }
+  10%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes how-hit {
+  0%,
+  40% {
+    opacity: 0;
+  }
+  48%,
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Played on a timer (browsers without scroll-driven animations) -------------------------------- */
+[data-motion="observer"] .how__lane {
+  opacity: 0.35;
+  transition: opacity 320ms var(--ease-out);
+}
+
+[data-motion="observer"] .how__wire-ink {
+  transform: scaleX(0);
+  transition: transform 700ms var(--ease-out);
+}
+
+[data-motion="observer"] .how__travel--in {
+  transform: translateX(-100%);
+}
+
+[data-motion="observer"] .how__node::before,
+[data-motion="observer"] .how__tools [data-hit]::before {
+  opacity: 0;
+  transition: opacity 320ms ease-out;
+}
+
+[data-motion="observer"] .how__lane[data-active] {
+  opacity: 1;
+}
+
+[data-motion="observer"] [data-active] .how__wire-ink {
+  transform: scaleX(1);
+}
+
+[data-motion="observer"] [data-active] .how__node::before,
+[data-motion="observer"] .how__tools [data-hit][data-active]::before {
+  opacity: 1;
+}
+
+[data-motion="observer"] [data-active] .how__travel--out {
+  animation: how-out 1900ms linear both;
+}
+
+[data-motion="observer"] [data-active] .how__travel--in {
+  animation: how-in 1900ms var(--ease-out) both;
+}
+
+/* Layout ---------------------------------------------------------------------------------------- */
+@media (max-width: 1023px) {
+  /* The stage pins to the top of the screen and the steps scroll under it. */
+  .how__stage {
+    margin-inline: calc(var(--gutter) * -1);
+    padding-inline: var(--gutter);
+    box-shadow: 0 1px 0 var(--rule);
+  }
+}
+
+@media (min-width: 640px) {
+  .how__lane {
+    grid-template-columns: minmax(0, 1fr) 9.5rem;
+  }
+
+  .how__chip-text {
+    display: inline;
+  }
+
+  .how__node span {
+    font-size: var(--step-data);
+  }
+}
+
+@media (min-width: 1024px) {
+  .how__scene {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: start;
+  }
+
+  .how__steps {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .how__stage {
+    grid-column: 2;
+    grid-row: 1;
+    top: max(1.5rem, calc(50vh - 12rem));
+    row-gap: 1.5rem;
+    padding-block: 0;
+  }
+
+  .how__server {
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+  }
+
+  .how__call {
+    font-size: var(--step-body);
+  }
+
+  .how__count {
+    display: none;
+  }
+
+  .how__tools {
+    display: flex;
+  }
+
+  .how__lane {
+    grid-template-columns: minmax(0, 1fr) 11rem;
+  }
+
+  .how__wire {
+    height: 3rem;
+  }
+
+  .how__node {
+    padding: 0.75rem 0.875rem;
+  }
+
+  .how__node strong {
+    font-size: var(--step-body);
+  }
+}

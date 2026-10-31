@@ -84,6 +84,130 @@
         </figure>
       </section>
 
+      <section class="section section--wide how" id="how-it-works" aria-labelledby="how-title">
+        <h2 class="display section__title" id="how-title">How it works</h2>
+        <div class="section__body">
+          <p class="how__intro">
+            One <code>createServer()</code> call builds the MCP server and its nine tools. Three
+            runtimes wrap that same server in a different transport, so a tool gives the same
+            answer wherever it runs.
+          </p>
+          <!-- data-motion: "static" until how.ts picks "scroll" (CSS scroll-driven animations)
+               or "observer" (IntersectionObserver fallback). Static is the final state. -->
+          <div class="how__scene" data-how data-motion="static">
+            <!-- The diagram repeats what the steps say, so assistive tech reads the steps only. -->
+            <div class="how__stage" aria-hidden="true">
+              <div class="how__server">
+                <code class="how__call">createServer()</code>
+                <span class="how__count">9 tools</span>
+                <!-- biome-ignore lint/a11y/noRedundantRoles: Safari drops list semantics when list-style is none -->
+                <ul class="how__tools" role="list">
+                  <li>ab_test_evaluate</li>
+                  <li data-hit="1">ab_test_plan</li>
+                  <li>email_test_analyze</li>
+                  <li>budget_simulate</li>
+                  <li data-hit="2">budget_optimize</li>
+                  <li data-hit="3">store_sales</li>
+                  <li>customer_rfm</li>
+                  <li>lead_funnel</li>
+                  <li>attribution_compare</li>
+                </ul>
+              </div>
+              <div class="how__lane" data-lane="1">
+                <div class="how__wire">
+                  <span class="how__wire-ink"></span>
+                  <span class="how__travel how__travel--out"
+                    ><span class="how__chip"><span class="how__dir">out</span><span class="how__chip-text">tools/call</span></span></span
+                  >
+                  <span class="how__travel how__travel--in"
+                    ><span class="how__chip"><span class="how__dir">in</span><span class="how__chip-text">result</span></span></span
+                  >
+                </div>
+                <div class="how__node">
+                  <strong>Your browser</strong>
+                  <span>in-memory</span>
+                </div>
+              </div>
+              <div class="how__lane" data-lane="2">
+                <div class="how__wire">
+                  <span class="how__wire-ink"></span>
+                  <span class="how__travel how__travel--out"
+                    ><span class="how__chip"><span class="how__dir">out</span><span class="how__chip-text">tools/call</span></span></span
+                  >
+                  <span class="how__travel how__travel--in"
+                    ><span class="how__chip"><span class="how__dir">in</span><span class="how__chip-text">result</span></span></span
+                  >
+                </div>
+                <div class="how__node">
+                  <strong>Cloudflare Worker</strong>
+                  <span>HTTP /mcp</span>
+                </div>
+              </div>
+              <div class="how__lane" data-lane="3">
+                <div class="how__wire">
+                  <span class="how__wire-ink"></span>
+                  <span class="how__travel how__travel--out"
+                    ><span class="how__chip"><span class="how__dir">out</span><span class="how__chip-text">tools/call</span></span></span
+                  >
+                  <span class="how__travel how__travel--in"
+                    ><span class="how__chip"><span class="how__dir">in</span><span class="how__chip-text">result</span></span></span
+                  >
+                </div>
+                <div class="how__node">
+                  <strong>Your machine</strong>
+                  <span>stdio</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- biome-ignore lint/a11y/noRedundantRoles: Safari drops list semantics when list-style is none -->
+            <ol class="how__steps" role="list">
+              <li class="how__step" data-step="1">
+                <h3 class="how__step-title">In your browser</h3>
+                <p>
+                  The playground on this page imports <code>createServer()</code> and connects to
+                  it over an in-memory transport. The call never leaves the tab.
+                </p>
+                <pre class="how__msg" data-how-message><code>{"jsonrpc": "2.0", "id": 2,
+ "method": "tools/call",
+ "params": {
+  "name": "ab_test_plan",
+  "arguments": {
+   "baseline_rate": 0.03,
+   "mde_relative": 0.2,
+   "daily_visitors": 2000}}}</code></pre>
+              </li>
+              <li class="how__step" data-step="2">
+                <h3 class="how__step-title">On a Cloudflare Worker</h3>
+                <p>
+                  The Worker builds a fresh server for every request and answers Streamable HTTP
+                  at <code>/mcp</code>. That URL is what you paste into Claude as a custom
+                  connector.
+                </p>
+                <pre class="how__msg" data-how-message><code>{"jsonrpc": "2.0", "id": 2,
+ "method": "tools/call",
+ "params": {
+  "name": "budget_optimize",
+  "arguments": {}}}</code></pre>
+              </li>
+              <li class="how__step" data-step="3">
+                <h3 class="how__step-title">On your machine</h3>
+                <p>
+                  <code>npm run start:stdio</code> runs the same server over stdin and stdout, one
+                  JSON-RPC message per line, so Claude Desktop can start it as a local command.
+                </p>
+                <pre class="how__msg" data-how-message><code>{"jsonrpc": "2.0", "id": 2,
+ "method": "tools/call",
+ "params": {
+  "name": "store_sales",
+  "arguments": {
+   "group_by": "category"}}}</code></pre>
+              </li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
       <section class="section" id="transcripts" aria-labelledby="transcripts-title">
         <h2 class="display section__title" id="transcripts-title">Transcripts</h2>
         <div class="section__body" data-transcripts>

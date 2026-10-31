@@ -31,7 +31,7 @@ function withCors(response: Response, origin: string | null): Response {
 
 function preflight(origin: string | null): Response {
   const headers = new Headers({
-    "access-control-allow-methods": "POST, OPTIONS",
+    "access-control-allow-methods": "POST, GET, DELETE, OPTIONS",
     "access-control-allow-headers":
       "content-type, accept, mcp-protocol-version, mcp-method, mcp-name",
     "access-control-max-age": "86400",

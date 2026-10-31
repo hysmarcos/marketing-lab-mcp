@@ -132,11 +132,48 @@ describe("worker", () => {
     );
     expect(res.status).toBe(204);
     expect(res.headers.get("access-control-allow-origin")).toBe(PAGES_ORIGIN);
-    expect(res.headers.get("access-control-allow-methods")).toBe("POST, OPTIONS");
+    expect(res.headers.get("access-control-allow-methods")).toBe("POST, GET, DELETE, OPTIONS");
     expect(res.headers.get("access-control-allow-headers")).toBe(
       "content-type, accept, mcp-protocol-version, mcp-method, mcp-name",
     );
     expect(res.headers.get("vary")).toContain("Origin");
+  });
+
+  it.each([
+    ["a lookalike subdomain", "https://hysmarcos.github.io.evil.com"],
+    ["a trailing slash", "https://hysmarcos.github.io/"],
+    ["the literal string null", "null"],
+  ])("rejects an Origin that is %s with 403", async (_label, origin) => {
+    const res = await worker.fetch(mcpPost({ origin }));
+    expect(res.status).toBe(403);
+    expect(res.headers.get("access-control-allow-origin")).toBeNull();
+  });
+
+  it("answers the CORS preflight from localhost:5173 with 204", async () => {
+    const res = await worker.fetch(
+      new Request(MCP_URL, {
+        method: "OPTIONS",
+        headers: { origin: LOCAL_ORIGIN, "access-control-request-method": "POST" },
+      }),
+    );
+    expect(res.status).toBe(204);
+    expect(res.headers.get("access-control-allow-origin")).toBe(LOCAL_ORIGIN);
+    expect(res.headers.get("access-control-allow-methods")).toContain("POST");
+  });
+
+  it("keeps the CORS headers on 404 and 405 so a browser can read the error", async () => {
+    const notFound = await worker.fetch(
+      new Request("https://worker.test/nope", { headers: { origin: PAGES_ORIGIN } }),
+    );
+    expect(notFound.status).toBe(404);
+    expect(notFound.headers.get("access-control-allow-origin")).toBe(PAGES_ORIGIN);
+    for (const method of ["GET", "DELETE"]) {
+      const res = await worker.fetch(
+        new Request(MCP_URL, { method, headers: { origin: PAGES_ORIGIN } }),
+      );
+      expect(res.status).toBe(405);
+      expect(res.headers.get("access-control-allow-origin")).toBe(PAGES_ORIGIN);
+    }
   });
 
   it("answers GET /mcp with 405 (stateless: no session stream)", async () => {

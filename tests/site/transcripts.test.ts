@@ -3,6 +3,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { CallToolResult } from "@modelcontextprotocol/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { LIVE_URL } from "../../site/src/config";
 import { callTool, connect } from "../../site/src/mcp";
 import { mountPlayground } from "../../site/src/playground";
 import {
@@ -182,9 +183,15 @@ describe("committed transcripts", () => {
     /\/tmp/,
     /hoyos/i,
   ];
+  // The public Worker URL is the one allowed exception: it is the transcript's server_url and is
+  // published in site/src/config.ts anyway. Anything else that matches still fails.
+  const withoutLiveUrl = (text: string) => text.split(LIVE_URL).join("<live url>");
+  it("exempt only the public Worker URL, which is a workers.dev MCP endpoint", () => {
+    expect(LIVE_URL).toMatch(/^https:\/\/[\w.-]+\.workers\.dev\/mcp$/);
+  });
   it.each(files)("%s holds no local paths, user names or session details", (name) => {
-    const text = raw.get(name) as string;
-    const strings = JSON.stringify(JSON.parse(text));
+    const text = withoutLiveUrl(raw.get(name) as string);
+    const strings = withoutLiveUrl(JSON.stringify(JSON.parse(raw.get(name) as string)));
     for (const pattern of PRIVATE) {
       expect(pattern.test(text), `${pattern} in ${name}`).toBe(false);
       expect(pattern.test(strings), `${pattern} in ${name} (parsed)`).toBe(false);

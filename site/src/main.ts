@@ -4,6 +4,7 @@ import "./styles/base.css";
 
 import { LIVE_URL, REPO_URL } from "./config";
 import { renderConnect } from "./connect";
+import { canAnimate, EASE_OUT, EASE_SPRING, motionAllowed } from "./motion";
 import { runnerUnavailable, setPlaygroundStarter } from "./session";
 import { loadTranscript, mountTranscripts, renderHeroItems, TRANSCRIPT_IDS } from "./transcripts";
 import { setupUrlBox } from "./urlbox";
@@ -21,28 +22,51 @@ for (const link of document.querySelectorAll<HTMLAnchorElement>("[data-repo-link
 setupUrlBox(required<HTMLElement>("[data-urlbox]"), LIVE_URL);
 required<HTMLElement>("[data-connect]").append(renderConnect(LIVE_URL, REPO_URL));
 
-// The page's one moment of motion: the hero conversation appears message by message, 400 ms
-// apart. With reduced motion everything shows at once.
-const REVEAL_MS = 400;
-const animate = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+// The hero conversation plays after the opening print (base.css): messages arrive one by one on
+// a spring, and each tool ticket feeds out like a printed receipt. With reduced motion everything
+// shows at once.
 const chat = required<HTMLOListElement>("[data-hero-chat]");
+const HERO_START_MS = 640;
+const HERO_STEP_MS = 420;
 
 function reveal(items: HTMLElement[]): void {
-  if (!animate) return;
-  for (const item of items) item.dataset.reveal = "pending";
-  // Two frames, so the hidden state is painted before the transition starts.
-  requestAnimationFrame(() =>
-    requestAnimationFrame(() => {
-      items.forEach((item, i) => {
-        setTimeout(
-          () => {
-            item.dataset.reveal = "shown";
-          },
-          150 + REVEAL_MS * i,
-        );
-      });
-    }),
+  if (!motionAllowed() || !items[0] || !canAnimate(items[0])) return;
+  items.forEach((item, i) => {
+    const delay = HERO_START_MS + HERO_STEP_MS * i;
+    const ticket = item.querySelector<HTMLElement>(".ticket");
+    if (ticket) {
+      feedReceipt(item, ticket, delay);
+      return;
+    }
+    item.animate(
+      [
+        { opacity: 0, transform: "translateY(12px)" },
+        { opacity: 1, transform: "none" },
+      ],
+      { duration: 620, delay, easing: EASE_SPRING, fill: "backwards" },
+    );
+  });
+}
+
+/**
+ * A receipt printer pushes paper out in short bursts: the ticket slides down out of the top edge
+ * of its row in three pulls. The row clips it only while it moves; its height never changes.
+ */
+function feedReceipt(row: HTMLElement, ticket: HTMLElement, delay: number): void {
+  row.classList.add("is-feeding");
+  const feed = ticket.animate(
+    [
+      { transform: "translateY(-101%)", easing: EASE_OUT },
+      { transform: "translateY(-58%)", offset: 0.32 },
+      { transform: "translateY(-58%)", offset: 0.4, easing: EASE_OUT },
+      { transform: "translateY(-18%)", offset: 0.7 },
+      { transform: "translateY(-18%)", offset: 0.76, easing: EASE_OUT },
+      { transform: "none" },
+    ],
+    { duration: 760, delay, fill: "backwards" },
   );
+  const done = () => row.classList.remove("is-feeding");
+  feed.finished.then(done, done);
 }
 
 function sectionError(root: HTMLElement, text: string): void {

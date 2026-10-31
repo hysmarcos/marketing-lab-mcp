@@ -38,7 +38,16 @@
     <main id="main" tabindex="-1">
       <section class="hero" aria-labelledby="hero-title">
         <div class="hero__copy">
-          <h1 id="hero-title" class="display hero__title">Marketing math your AI can call</h1>
+          <!-- The two aria-hidden copies are the ink A and ink B plates of the opening print. -->
+          <h1 id="hero-title" class="display hero__title">
+            <span class="hero__title-key">Marketing math your AI can call</span>
+            <span class="hero__plate hero__plate--a" aria-hidden="true"
+              >Marketing math your AI can call</span
+            >
+            <span class="hero__plate hero__plate--b" aria-hidden="true"
+              >Marketing math your AI can call</span
+            >
+          </h1>
           <p class="hero__lead">
             Nine marketing tools (A/B tests, budget splits, attribution, customer segments) that
             Claude calls to run the numbers instead of guessing them.

@@ -39,7 +39,38 @@
   --gutter: 16px;
   --measure: 72rem;
   --rule-width: 1.5px;
-  --reveal-ms: 400ms;
+
+  /* Motion curves (mirrored in motion.ts). Everything else animates with these two. */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: linear(
+    0,
+    0.031 4.2%,
+    0.109 8.3%,
+    0.214 12.5%,
+    0.332 16.7%,
+    0.451 20.8%,
+    0.565 25%,
+    0.668 29.2%,
+    0.757 33.3%,
+    0.832 37.5%,
+    0.893 41.7%,
+    0.941 45.8%,
+    0.977 50%,
+    1.003 54.2%,
+    1.021 58.3%,
+    1.031 62.5%,
+    1.037 66.7%,
+    1.038 70.8%,
+    1.037 75%,
+    1.034 79.2%,
+    1.03 83.3%,
+    1.026 87.5%,
+    1.021 91.7%,
+    1.017 95.8%,
+    1
+  );
+  /* How two inks combine where they overprint: multiply on the light sheet, screen on the dark. */
+  --overprint: multiply;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -55,6 +86,7 @@
 
     --on-ink-a: #e6e9e1;
     --on-ink-b: #1a1e29;
+    --overprint: screen;
   }
 }
 

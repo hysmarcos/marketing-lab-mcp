@@ -230,6 +230,46 @@
   overflow-wrap: anywhere;
 }
 
+/* A stamp lands like a rubber stamp: it comes down a little large and askew, hits the paper (a
+   short squash) and the ink spreads to full strength. Only stamps that appear after a run move. */
+@media (prefers-reduced-motion: no-preference) {
+  .stamp {
+    animation: stamp-thunk 300ms both;
+  }
+
+  .stamp__ink {
+    animation: ink-spread 420ms 120ms ease-out both;
+  }
+}
+
+@keyframes stamp-thunk {
+  0% {
+    opacity: 0;
+    scale: 1.15;
+    rotate: -3deg;
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+  }
+  20% {
+    opacity: 1;
+  }
+  62% {
+    scale: 0.985;
+    rotate: 0deg;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  100% {
+    opacity: 1;
+    scale: 1;
+    rotate: 0deg;
+  }
+}
+
+@keyframes ink-spread {
+  from {
+    opacity: 0.45;
+  }
+}
+
 /* Narrow tickets tear along the bottom instead of the right ---------------------------------- */
 @container (max-width: 27rem) {
   .ticket__sheet {

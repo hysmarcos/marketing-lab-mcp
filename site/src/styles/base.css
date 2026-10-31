@@ -208,8 +208,34 @@ code {
 }
 
 .hero__title {
+  position: relative;
+  isolation: isolate;
   max-width: 11ch;
   font-size: clamp(3rem, 2rem + 5vw, var(--step-hero));
+  text-wrap: balance;
+}
+
+.hero__title-key {
+  display: block;
+}
+
+/* The ink A and ink B plates of the opening print. They sit exactly over the key text (same box,
+   same wrap) and are invisible unless the entrance runs. */
+.hero__plate {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  mix-blend-mode: var(--overprint);
+  pointer-events: none;
+  user-select: none;
+}
+
+.hero__plate--a {
+  color: var(--ink-a);
+}
+
+.hero__plate--b {
+  color: var(--ink-b);
 }
 
 .hero__lead {
@@ -328,17 +354,9 @@ code {
   background: var(--rule);
 }
 
-.chat__item[data-reveal="pending"] {
-  opacity: 0;
-  transform: translateY(8px);
-}
-
-.chat__item[data-reveal="shown"] {
-  opacity: 1;
-  transform: none;
-  transition:
-    opacity var(--reveal-ms) ease-out,
-    transform var(--reveal-ms) ease-out;
+/* While a ticket feeds out of the "printer slot" at the top of its row, the row clips it. */
+.chat__item.is-feeding {
+  overflow: clip;
 }
 
 /* Sections ------------------------------------------------------------------------------------ */
@@ -509,10 +527,93 @@ code {
   html {
     scroll-behavior: auto;
   }
+}
 
-  .chat__item[data-reveal] {
+/* Opening print ------------------------------------------------------------------------------- */
+/*
+ * The page's one authored moment. The headline prints like a two-colour riso pass: the ink A and
+ * ink B plates land off register and slide into it (600 ms), then the key plate (the real text)
+ * prints over them and the colour plates lift. The lead, the URL box and the caption follow; the
+ * recorded conversation starts after them (main.ts). Without motion nothing here runs and the key
+ * text is simply there.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .hero__plate--a {
+    animation: plate-a 820ms var(--ease-out) both;
+  }
+
+  .hero__plate--b {
+    animation: plate-b 820ms var(--ease-out) both;
+  }
+
+  .hero__title-key {
+    animation: key-print 240ms 520ms ease-out both;
+  }
+
+  .hero__lead,
+  .urlbox,
+  .hero__caption {
+    animation: rise 640ms var(--ease-out) both;
+  }
+
+  .hero__lead {
+    animation-delay: 260ms;
+  }
+
+  .urlbox {
+    animation-delay: 360ms;
+  }
+
+  .hero__caption {
+    animation-delay: 460ms;
+  }
+}
+
+@keyframes plate-a {
+  0% {
+    opacity: 0;
+    transform: translate(-9px, -5px);
+  }
+  12% {
+    opacity: 1;
+  }
+  70% {
     opacity: 1;
     transform: none;
-    transition: none;
+  }
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+
+@keyframes plate-b {
+  0% {
+    opacity: 0;
+    transform: translate(8px, 6px);
+  }
+  12% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+
+@keyframes key-print {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
   }
 }

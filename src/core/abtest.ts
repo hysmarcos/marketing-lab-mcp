@@ -173,6 +173,11 @@ export function planAbTest(args: {
     throw new ToolInputError("daily_visitors must be greater than 0.");
   }
   const p2 = p1 * (1 + mde);
+  if (!(p2 > p1)) {
+    throw new ToolInputError(
+      "mde_relative is too small to change the baseline rate; use a larger expected lift.",
+    );
+  }
   if (p2 >= 1) {
     throw new ToolInputError(
       `baseline_rate x (1 + mde_relative) = ${p2.toFixed(3)} must stay below 1; lower the expected lift.`,

@@ -161,6 +161,10 @@ describe("planAbTest", () => {
     );
   });
 
+  it("rejects an mde_relative so small that the variant rate equals the baseline", () => {
+    expect(() => planAbTest({ baseline_rate: 0.03, mde_relative: 1e-17 })).toThrow(ToolInputError);
+  });
+
   describe("parity with the reference formula", () => {
     for (const c of reference.sample_size) {
       it(`p1=${c.baseline_rate} mde=${c.mde_relative} k=${c.variants}`, () => {

@@ -9,7 +9,9 @@
   "scripts": {
     "test": "vitest run",
     "lint": "biome check .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "start:stdio": "tsx src/runtimes/stdio.ts",
+    "dev:worker": "wrangler dev"
   },
   "dependencies": {
     "@modelcontextprotocol/client": "2.4.0",

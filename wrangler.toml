@@ -1,0 +1,3 @@
+name = "marketing-lab-mcp"
+main = "src/runtimes/worker.ts"
+compatibility_date = "2026-10-01"

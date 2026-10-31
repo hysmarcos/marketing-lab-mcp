@@ -59,6 +59,25 @@ function betaPosterior(arm: Arm): { mean: number; variance: number } {
   return { mean: alpha / total, variance: (alpha * beta) / (total * total * (total + 1)) };
 }
 
+/**
+ * Two-sided pooled two-proportion z-test (the same test as statsmodels' proportions_ztest).
+ * `degenerate` is true when the pooled rate is 0 or 1, where the test cannot tell the arms apart
+ * and the p-value is set to 1.
+ */
+export function pooledTwoProportionTest(
+  conversionsA: number,
+  visitorsA: number,
+  conversionsB: number,
+  visitorsB: number,
+): { pValue: number; degenerate: boolean } {
+  const pooled = (conversionsA + conversionsB) / (visitorsA + visitorsB);
+  const pooledSe = Math.sqrt(pooled * (1 - pooled) * (1 / visitorsA + 1 / visitorsB));
+  if (!(pooledSe > 0)) return { pValue: 1, degenerate: true };
+  const diff = conversionsB / visitorsB - conversionsA / visitorsA;
+  // Use the lower tail directly: 1 - cdf would lose precision for tiny p-values.
+  return { pValue: Math.min(1, 2 * normalCdf(-Math.abs(diff / pooledSe))), degenerate: false };
+}
+
 export function evaluateAbTest(args: {
   control: Arm;
   variant: Arm;
@@ -80,14 +99,9 @@ export function evaluateAbTest(args: {
   const pB = variant.conversions / nB;
   const diff = pB - pA;
 
-  // Two-sided pooled two-proportion z-test.
-  const pooled = (control.conversions + variant.conversions) / (nA + nB);
-  const pooledSe = Math.sqrt(pooled * (1 - pooled) * (1 / nA + 1 / nB));
-  let pValue = 1;
-  if (pooledSe > 0) {
-    // Use the lower tail directly: 1 - cdf would lose precision for tiny p-values.
-    pValue = Math.min(1, 2 * normalCdf(-Math.abs(diff / pooledSe)));
-  } else {
+  const z = pooledTwoProportionTest(control.conversions, nA, variant.conversions, nB);
+  const pValue = z.pValue;
+  if (z.degenerate) {
     warnings.push(
       "Both arms have either no conversions or only conversions, so the test cannot tell them apart (p-value set to 1).",
     );

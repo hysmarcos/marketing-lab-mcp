@@ -175,3 +175,27 @@ export function studentTSf(t: number, df: number): number {
   const tail = 0.5 * regularizedIncompleteBeta(df / (df + t * t), df / 2, 0.5); // P(T > |t|)
   return t > 0 ? tail : 1 - tail;
 }
+
+/**
+ * Welch's two-sample t-test from summary statistics (variances use the n - 1 denominator).
+ * `degenerate` is true when both variances are 0, where the p-value is set to 1.
+ */
+export function welchTTest(
+  mean1: number,
+  variance1: number,
+  n1: number,
+  mean2: number,
+  variance2: number,
+  n2: number,
+): { t: number; df: number; pValue: number; degenerate: boolean } {
+  if (!(n1 > 1 && n2 > 1)) {
+    throw new RangeError(`each sample needs at least 2 values, got ${n1}, ${n2}`);
+  }
+  const v1 = variance1 / n1;
+  const v2 = variance2 / n2;
+  const se2 = v1 + v2;
+  if (!(se2 > 0)) return { t: 0, df: n1 + n2 - 2, pValue: 1, degenerate: true };
+  const t = (mean1 - mean2) / Math.sqrt(se2);
+  const df = se2 ** 2 / (v1 ** 2 / (n1 - 1) + v2 ** 2 / (n2 - 1));
+  return { t, df, pValue: Math.min(1, 2 * studentTSf(Math.abs(t), df)), degenerate: false };
+}

@@ -5,6 +5,7 @@ import {
   normalPpf,
   regularizedIncompleteBeta,
   studentTSf,
+  welchTTest,
 } from "../../src/core/stats";
 import reference from "../fixtures/abtest_reference.json";
 
@@ -77,5 +78,23 @@ describe("studentTSf", () => {
       const p = 2 * studentTSf(Math.abs(c.t), c.df);
       expect(Math.abs(p - c.p_value)).toBeLessThan(TOL);
     }
+  });
+});
+
+describe("welchTTest", () => {
+  it("reproduces scipy's t, df and p-value from summary statistics", () => {
+    for (const c of reference.welch) {
+      const r = welchTTest(c.mean1, c.std1 ** 2, c.n1, c.mean2, c.std2 ** 2, c.n2);
+      expect(r.t).toBeCloseTo(c.t, 9);
+      expect(r.df).toBeCloseTo(c.df, 6);
+      expect(Math.abs(r.pValue - c.p_value)).toBeLessThan(TOL);
+      expect(r.degenerate).toBe(false);
+    }
+  });
+  it("gives p = 1 when both variances are 0 and rejects samples smaller than 2", () => {
+    const r = welchTTest(0, 0, 10, 0, 0, 10);
+    expect(r.pValue).toBe(1);
+    expect(r.degenerate).toBe(true);
+    expect(() => welchTTest(0, 1, 1, 0, 1, 10)).toThrow(RangeError);
   });
 });

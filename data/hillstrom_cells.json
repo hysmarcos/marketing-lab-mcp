@@ -1,0 +1,606 @@
+{
+ "source": "Hillstrom E-Mail Analytics And Data Mining Challenge (MineThatData, 2008): aggregated public data, 64,000 customers in three random arms.",
+ "license_note": "Source: Kevin Hillstrom, MineThatData E-Mail Analytics And Data Mining Challenge, 2008, http://www.minethatdata.com/Kevin_Hillstrom_MineThatData_E-MailAnalytics_DataMiningChallenge_2008.03.20.csv. The dataset states no license. This file keeps only aggregated counts and sums per arm and segment, not customer rows.",
+ "cells": [
+  {
+   "arm": "control",
+   "dimension": "overall",
+   "value": "all",
+   "n": 21306,
+   "visits": 2262,
+   "conversions": 122,
+   "spend_sum": 13908.33,
+   "spend_sq_sum": 2870050.3621
+  },
+  {
+   "arm": "mens",
+   "dimension": "overall",
+   "value": "all",
+   "n": 21307,
+   "visits": 3894,
+   "conversions": 267,
+   "spend_sum": 30311.69,
+   "spend_sq_sum": 6759024.4973
+  },
+  {
+   "arm": "womens",
+   "dimension": "overall",
+   "value": "all",
+   "n": 21387,
+   "visits": 3238,
+   "conversions": 189,
+   "spend_sum": 23038.11,
+   "spend_sq_sum": 4911446.5763
+  },
+  {
+   "arm": "control",
+   "dimension": "history_segment",
+   "value": "1) $0 - $100",
+   "n": 7612,
+   "visits": 646,
+   "conversions": 32,
+   "spend_sum": 3934.59,
+   "spend_sq_sum": 908789.7651
+  },
+  {
+   "arm": "control",
+   "dimension": "history_segment",
+   "value": "2) $100 - $200",
+   "n": 4836,
+   "visits": 440,
+   "conversions": 20,
+   "spend_sum": 2045.12,
+   "spend_sq_sum": 270901.1626
+  },
+  {
+   "arm": "control",
+   "dimension": "history_segment",
+   "value": "3) $200 - $350",
+   "n": 4044,
+   "visits": 511,
+   "conversions": 28,
+   "spend_sum": 3772.57,
+   "spend_sq_sum": 939044.0659
+  },
+  {
+   "arm": "control",
+   "dimension": "history_segment",
+   "value": "4) $350 - $500",
+   "n": 2124,
+   "visits": 319,
+   "conversions": 24,
+   "spend_sum": 2145.81,
+   "spend_sq_sum": 342036.1125
+  },
+  {
+   "arm": "control",
+   "dimension": "history_segment",
+   "value": "5) $500 - $750",
+   "n": 1652,
+   "visits": 181,
+   "conversions": 9,
+   "spend_sum": 890.19,
+   "spend_sq_sum": 105644.1107
+  },
+  {
+   "arm": "control",
+   "dimension": "history_segment",
+   "value": "6) $750 - $1,000",
+   "n": 622,
+   "visits": 96,
+   "conversions": 3,
+   "spend_sum": 217.41,
+   "spend_sq_sum": 17654.7995
+  },
+  {
+   "arm": "control",
+   "dimension": "history_segment",
+   "value": "7) $1,000 +",
+   "n": 416,
+   "visits": 69,
+   "conversions": 6,
+   "spend_sum": 902.64,
+   "spend_sq_sum": 285980.3458
+  },
+  {
+   "arm": "mens",
+   "dimension": "history_segment",
+   "value": "1) $0 - $100",
+   "n": 7724,
+   "visits": 1185,
+   "conversions": 71,
+   "spend_sum": 8150.18,
+   "spend_sq_sum": 1885200.0412
+  },
+  {
+   "arm": "mens",
+   "dimension": "history_segment",
+   "value": "2) $100 - $200",
+   "n": 4691,
+   "visits": 751,
+   "conversions": 42,
+   "spend_sum": 5287.43,
+   "spend_sq_sum": 1220823.8205
+  },
+  {
+   "arm": "mens",
+   "dimension": "history_segment",
+   "value": "3) $200 - $350",
+   "n": 4090,
+   "visits": 862,
+   "conversions": 63,
+   "spend_sum": 6010.1,
+   "spend_sq_sum": 1218589.967
+  },
+  {
+   "arm": "mens",
+   "dimension": "history_segment",
+   "value": "4) $350 - $500",
+   "n": 2097,
+   "visits": 502,
+   "conversions": 42,
+   "spend_sum": 5408.6,
+   "spend_sq_sum": 1280515.5938
+  },
+  {
+   "arm": "mens",
+   "dimension": "history_segment",
+   "value": "5) $500 - $750",
+   "n": 1597,
+   "visits": 333,
+   "conversions": 22,
+   "spend_sum": 2622.06,
+   "spend_sq_sum": 548067.7578
+  },
+  {
+   "arm": "mens",
+   "dimension": "history_segment",
+   "value": "6) $750 - $1,000",
+   "n": 644,
+   "visits": 139,
+   "conversions": 16,
+   "spend_sum": 1213.09,
+   "spend_sq_sum": 151413.9329
+  },
+  {
+   "arm": "mens",
+   "dimension": "history_segment",
+   "value": "7) $1,000 +",
+   "n": 464,
+   "visits": 122,
+   "conversions": 11,
+   "spend_sum": 1620.23,
+   "spend_sq_sum": 454413.3841
+  },
+  {
+   "arm": "womens",
+   "dimension": "history_segment",
+   "value": "1) $0 - $100",
+   "n": 7634,
+   "visits": 1005,
+   "conversions": 61,
+   "spend_sum": 8723.47,
+   "spend_sq_sum": 2003755.2355
+  },
+  {
+   "arm": "womens",
+   "dimension": "history_segment",
+   "value": "2) $100 - $200",
+   "n": 4727,
+   "visits": 631,
+   "conversions": 37,
+   "spend_sum": 4165.85,
+   "spend_sq_sum": 744811.4797
+  },
+  {
+   "arm": "womens",
+   "dimension": "history_segment",
+   "value": "3) $200 - $350",
+   "n": 4155,
+   "visits": 675,
+   "conversions": 26,
+   "spend_sum": 2533.47,
+   "spend_sq_sum": 461233.1013
+  },
+  {
+   "arm": "womens",
+   "dimension": "history_segment",
+   "value": "4) $350 - $500",
+   "n": 2188,
+   "visits": 417,
+   "conversions": 20,
+   "spend_sum": 1989.72,
+   "spend_sq_sum": 374559.5476
+  },
+  {
+   "arm": "womens",
+   "dimension": "history_segment",
+   "value": "5) $500 - $750",
+   "n": 1662,
+   "visits": 292,
+   "conversions": 26,
+   "spend_sum": 3032.33,
+   "spend_sq_sum": 616843.3293
+  },
+  {
+   "arm": "womens",
+   "dimension": "history_segment",
+   "value": "6) $750 - $1,000",
+   "n": 593,
+   "visits": 124,
+   "conversions": 8,
+   "spend_sum": 591.69,
+   "spend_sq_sum": 69788.5241
+  },
+  {
+   "arm": "womens",
+   "dimension": "history_segment",
+   "value": "7) $1,000 +",
+   "n": 428,
+   "visits": 94,
+   "conversions": 11,
+   "spend_sum": 2001.58,
+   "spend_sq_sum": 640455.3588
+  },
+  {
+   "arm": "control",
+   "dimension": "zip_code",
+   "value": "Rural",
+   "n": 3139,
+   "visits": 482,
+   "conversions": 26,
+   "spend_sum": 2408.04,
+   "spend_sq_sum": 337821.6582
+  },
+  {
+   "arm": "control",
+   "dimension": "zip_code",
+   "value": "Suburban",
+   "n": 9625,
+   "visits": 953,
+   "conversions": 48,
+   "spend_sum": 6443.38,
+   "spend_sq_sum": 1508557.6784
+  },
+  {
+   "arm": "control",
+   "dimension": "zip_code",
+   "value": "Urban",
+   "n": 8542,
+   "visits": 827,
+   "conversions": 48,
+   "spend_sum": 5056.91,
+   "spend_sq_sum": 1023671.0255
+  },
+  {
+   "arm": "mens",
+   "dimension": "zip_code",
+   "value": "Rural",
+   "n": 3243,
+   "visits": 736,
+   "conversions": 44,
+   "spend_sum": 4937.91,
+   "spend_sq_sum": 1007555.7473
+  },
+  {
+   "arm": "mens",
+   "dimension": "zip_code",
+   "value": "Suburban",
+   "n": 9501,
+   "visits": 1647,
+   "conversions": 118,
+   "spend_sum": 13997.73,
+   "spend_sq_sum": 3306343.2501
+  },
+  {
+   "arm": "mens",
+   "dimension": "zip_code",
+   "value": "Urban",
+   "n": 8563,
+   "visits": 1511,
+   "conversions": 105,
+   "spend_sum": 11376.05,
+   "spend_sq_sum": 2445125.4999
+  },
+  {
+   "arm": "womens",
+   "dimension": "zip_code",
+   "value": "Rural",
+   "n": 3181,
+   "visits": 581,
+   "conversions": 37,
+   "spend_sum": 4077.97,
+   "spend_sq_sum": 719939.3577
+  },
+  {
+   "arm": "womens",
+   "dimension": "zip_code",
+   "value": "Suburban",
+   "n": 9650,
+   "visits": 1427,
+   "conversions": 73,
+   "spend_sum": 8169.82,
+   "spend_sq_sum": 1826773.1984
+  },
+  {
+   "arm": "womens",
+   "dimension": "zip_code",
+   "value": "Urban",
+   "n": 8556,
+   "visits": 1230,
+   "conversions": 79,
+   "spend_sum": 10790.32,
+   "spend_sq_sum": 2364734.0202
+  },
+  {
+   "arm": "control",
+   "dimension": "channel",
+   "value": "Multichannel",
+   "n": 2606,
+   "visits": 335,
+   "conversions": 18,
+   "spend_sum": 1604.62,
+   "spend_sq_sum": 257029.9086
+  },
+  {
+   "arm": "control",
+   "dimension": "channel",
+   "value": "Phone",
+   "n": 9327,
+   "visits": 813,
+   "conversions": 50,
+   "spend_sum": 6010.81,
+   "spend_sq_sum": 1277045.1395
+  },
+  {
+   "arm": "control",
+   "dimension": "channel",
+   "value": "Web",
+   "n": 9373,
+   "visits": 1114,
+   "conversions": 54,
+   "spend_sum": 6292.9,
+   "spend_sq_sum": 1335975.314
+  },
+  {
+   "arm": "mens",
+   "dimension": "channel",
+   "value": "Multichannel",
+   "n": 2577,
+   "visits": 545,
+   "conversions": 44,
+   "spend_sum": 4702.69,
+   "spend_sq_sum": 914684.1603
+  },
+  {
+   "arm": "mens",
+   "dimension": "channel",
+   "value": "Phone",
+   "n": 9240,
+   "visits": 1504,
+   "conversions": 100,
+   "spend_sum": 11166.79,
+   "spend_sq_sum": 2371619.5415
+  },
+  {
+   "arm": "mens",
+   "dimension": "channel",
+   "value": "Web",
+   "n": 9490,
+   "visits": 1845,
+   "conversions": 123,
+   "spend_sum": 14442.21,
+   "spend_sq_sum": 3472720.7955
+  },
+  {
+   "arm": "womens",
+   "dimension": "channel",
+   "value": "Multichannel",
+   "n": 2579,
+   "visits": 453,
+   "conversions": 36,
+   "spend_sum": 4573.28,
+   "spend_sq_sum": 1155076.1116
+  },
+  {
+   "arm": "womens",
+   "dimension": "channel",
+   "value": "Phone",
+   "n": 9454,
+   "visits": 1246,
+   "conversions": 67,
+   "spend_sum": 8290.46,
+   "spend_sq_sum": 1576377.0238
+  },
+  {
+   "arm": "womens",
+   "dimension": "channel",
+   "value": "Web",
+   "n": 9354,
+   "visits": 1539,
+   "conversions": 86,
+   "spend_sum": 10174.37,
+   "spend_sq_sum": 2179993.4409
+  },
+  {
+   "arm": "control",
+   "dimension": "newbie",
+   "value": "existing",
+   "n": 10611,
+   "visits": 1419,
+   "conversions": 82,
+   "spend_sum": 9925.0,
+   "spend_sq_sum": 2105772.2188
+  },
+  {
+   "arm": "control",
+   "dimension": "newbie",
+   "value": "new",
+   "n": 10695,
+   "visits": 843,
+   "conversions": 40,
+   "spend_sum": 3983.33,
+   "spend_sq_sum": 764278.1433
+  },
+  {
+   "arm": "mens",
+   "dimension": "newbie",
+   "value": "existing",
+   "n": 10621,
+   "visits": 2247,
+   "conversions": 148,
+   "spend_sum": 16072.94,
+   "spend_sq_sum": 3515143.9252
+  },
+  {
+   "arm": "mens",
+   "dimension": "newbie",
+   "value": "new",
+   "n": 10686,
+   "visits": 1647,
+   "conversions": 119,
+   "spend_sum": 14238.75,
+   "spend_sq_sum": 3243880.5721
+  },
+  {
+   "arm": "womens",
+   "dimension": "newbie",
+   "value": "existing",
+   "n": 10624,
+   "visits": 1847,
+   "conversions": 92,
+   "spend_sum": 11147.84,
+   "spend_sq_sum": 2365478.5782
+  },
+  {
+   "arm": "womens",
+   "dimension": "newbie",
+   "value": "new",
+   "n": 10763,
+   "visits": 1391,
+   "conversions": 97,
+   "spend_sum": 11890.27,
+   "spend_sq_sum": 2545967.9981
+  },
+  {
+   "arm": "control",
+   "dimension": "mens",
+   "value": "bought",
+   "n": 11787,
+   "visits": 1350,
+   "conversions": 73,
+   "spend_sum": 9238.65,
+   "spend_sq_sum": 2088900.2855
+  },
+  {
+   "arm": "control",
+   "dimension": "mens",
+   "value": "not_bought",
+   "n": 9519,
+   "visits": 912,
+   "conversions": 49,
+   "spend_sum": 4669.68,
+   "spend_sq_sum": 781150.0766
+  },
+  {
+   "arm": "mens",
+   "dimension": "mens",
+   "value": "bought",
+   "n": 11739,
+   "visits": 2302,
+   "conversions": 163,
+   "spend_sum": 19726.66,
+   "spend_sq_sum": 4680660.4322
+  },
+  {
+   "arm": "mens",
+   "dimension": "mens",
+   "value": "not_bought",
+   "n": 9568,
+   "visits": 1592,
+   "conversions": 104,
+   "spend_sum": 10585.03,
+   "spend_sq_sum": 2078364.0651
+  },
+  {
+   "arm": "womens",
+   "dimension": "mens",
+   "value": "bought",
+   "n": 11740,
+   "visits": 1600,
+   "conversions": 90,
+   "spend_sum": 12212.13,
+   "spend_sq_sum": 2956087.6155
+  },
+  {
+   "arm": "womens",
+   "dimension": "mens",
+   "value": "not_bought",
+   "n": 9647,
+   "visits": 1638,
+   "conversions": 99,
+   "spend_sum": 10825.98,
+   "spend_sq_sum": 1955358.9608
+  },
+  {
+   "arm": "control",
+   "dimension": "womens",
+   "value": "bought",
+   "n": 11668,
+   "visits": 1300,
+   "conversions": 69,
+   "spend_sum": 7205.81,
+   "spend_sq_sum": 1361399.2503
+  },
+  {
+   "arm": "control",
+   "dimension": "womens",
+   "value": "not_bought",
+   "n": 9638,
+   "visits": 962,
+   "conversions": 53,
+   "spend_sum": 6702.52,
+   "spend_sq_sum": 1508651.1118
+  },
+  {
+   "arm": "mens",
+   "dimension": "womens",
+   "value": "bought",
+   "n": 11749,
+   "visits": 2279,
+   "conversions": 157,
+   "spend_sum": 17139.22,
+   "spend_sq_sum": 3708766.2706
+  },
+  {
+   "arm": "mens",
+   "dimension": "womens",
+   "value": "not_bought",
+   "n": 9558,
+   "visits": 1615,
+   "conversions": 110,
+   "spend_sum": 13172.47,
+   "spend_sq_sum": 3050258.2267
+  },
+  {
+   "arm": "womens",
+   "dimension": "womens",
+   "value": "bought",
+   "n": 11765,
+   "visits": 2171,
+   "conversions": 130,
+   "spend_sum": 13668.39,
+   "spend_sq_sum": 2508535.7993
+  },
+  {
+   "arm": "womens",
+   "dimension": "womens",
+   "value": "not_bought",
+   "n": 9622,
+   "visits": 1067,
+   "conversions": 59,
+   "spend_sum": 9369.72,
+   "spend_sq_sum": 2402910.777
+  }
+ ]
+}

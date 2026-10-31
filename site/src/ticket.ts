@@ -20,6 +20,10 @@ export interface TicketOptions {
   input: Record<string, unknown>;
   /** Runs the call live. Without it the stub button is disabled. */
   onRun?: () => Promise<void>;
+  /** Label of the run button. Defaults to "Run it live"; the playground names its mode. */
+  runLabel?: string;
+  /** Label while the run is in progress. Defaults to "Running…". */
+  runningLabel?: string;
   stamp?: TicketStamp;
 }
 
@@ -131,6 +135,23 @@ export function setTicketStamp(ticket: HTMLElement, stamp: TicketStamp | undefin
   else delete ticket.dataset.stamped;
 }
 
+/**
+ * Changes the run button's labels on a ticket from `renderTicket` (for example when the
+ * playground switches between the browser and the live server). A run in progress keeps its busy
+ * label and picks up the new label when it ends.
+ */
+export function setTicketRunLabel(
+  ticket: HTMLElement,
+  runLabel: string,
+  runningLabel: string = RUNNING_LABEL,
+): void {
+  const button = ticket.querySelector<HTMLButtonElement>(".ticket__run");
+  if (!button) throw new Error("setTicketRunLabel needs an element created by renderTicket.");
+  ticket.dataset.runLabel = runLabel;
+  ticket.dataset.runningLabel = runningLabel;
+  if (ticket.getAttribute("aria-busy") !== "true") button.textContent = runLabel;
+}
+
 export function renderTicket(opts: TicketOptions): HTMLElement {
   const id = `ticket-${++nextId}`;
   const ticket = el("article", "ticket");
@@ -161,8 +182,10 @@ export function renderTicket(opts: TicketOptions): HTMLElement {
   body.append(slot);
 
   const stub = el("div", "ticket__stub");
-  const button = el("button", "ticket__run", RUN_LABEL);
+  const button = el("button", "ticket__run", opts.runLabel ?? RUN_LABEL);
   button.type = "button";
+  ticket.dataset.runLabel = opts.runLabel ?? RUN_LABEL;
+  ticket.dataset.runningLabel = opts.runningLabel ?? RUNNING_LABEL;
   const note = el("p", "ticket__note");
   note.id = `${id}-note`;
   stub.append(button, note);
@@ -173,7 +196,7 @@ export function renderTicket(opts: TicketOptions): HTMLElement {
       if (ticket.getAttribute("aria-busy") === "true") return;
       ticket.setAttribute("aria-busy", "true");
       button.disabled = true;
-      button.textContent = RUNNING_LABEL;
+      button.textContent = ticket.dataset.runningLabel ?? RUNNING_LABEL;
       note.textContent = "";
       button.removeAttribute("aria-describedby");
       try {
@@ -184,7 +207,7 @@ export function renderTicket(opts: TicketOptions): HTMLElement {
       } finally {
         ticket.removeAttribute("aria-busy");
         button.disabled = false;
-        button.textContent = RUN_LABEL;
+        button.textContent = ticket.dataset.runLabel ?? RUN_LABEL;
       }
     });
   } else {

@@ -1,6 +1,12 @@
 // @vitest-environment happy-dom
+import { Client } from "@modelcontextprotocol/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { LIVE_FALLBACK_NOTICE, mountPlayground } from "../../site/src/playground";
+import {
+  LIVE_FALLBACK_NOTICE,
+  LOG_MARKERS,
+  mountPlayground,
+  RUN_LABELS,
+} from "../../site/src/playground";
 import worker from "../../src/runtimes/worker";
 
 const LIVE = "https://worker.test/mcp";
@@ -35,7 +41,39 @@ function logLines(root: HTMLElement): string[] {
 
 afterEach(() => {
   document.body.replaceChildren();
+  vi.restoreAllMocks();
 });
+
+/** The Worker, straight through, with no network. */
+const workerFetch: typeof fetch = (input, init) => worker.fetch(new Request(input, init));
+
+function goLive(root: HTMLElement): void {
+  const live = q<HTMLInputElement>(root, 'input[value="live"]');
+  live.checked = true;
+  live.dispatchEvent(new Event("change"));
+}
+
+function ticketButton(root: HTMLElement): HTMLButtonElement {
+  return q<HTMLButtonElement>(root, ".pg__ticket .ticket__run");
+}
+
+/** Serves the Worker, but answers tools/list with a JSON-RPC error. */
+const brokenList: typeof fetch = async (input, init) => {
+  const request = new Request(input, init);
+  const body = request.method === "POST" ? await request.clone().text() : "";
+  const message = body ? JSON.parse(body) : {};
+  if (message.method === "tools/list") {
+    return new Response(
+      JSON.stringify({
+        jsonrpc: "2.0",
+        id: message.id,
+        error: { code: -32603, message: "Tool listing broke" },
+      }),
+      { status: 200, headers: { "content-type": "application/json" } },
+    );
+  }
+  return worker.fetch(request);
+};
 
 describe("playground", () => {
   it("lists the nine tools as toggle buttons and loads the first example", async () => {
@@ -173,5 +211,94 @@ describe("playground", () => {
     );
     expect(q(root, ".pg__notice").textContent).toBe(LIVE_FALLBACK_NOTICE);
     expect(q<HTMLInputElement>(root, 'input[value="browser"]').checked).toBe(true);
+  });
+
+  it("names the mode on the ticket's run button and follows mode changes", async () => {
+    const root = await mount({ liveUrl: LIVE, live: { fetch: workerFetch } });
+    toolButton(root, "ab_test_plan").click();
+    submit(root);
+    await vi.waitFor(() => expect(root.querySelector(".result")).not.toBeNull());
+    expect(ticketButton(root).textContent).toBe(RUN_LABELS.browser.run);
+    expect(RUN_LABELS.browser.run).toBe("Run in your browser");
+
+    goLive(root);
+    await vi.waitFor(() =>
+      expect(q(root, ".pg__status").textContent).toBe("Connected to the live server."),
+    );
+    expect(ticketButton(root).textContent).toBe("Run it live");
+
+    ticketButton(root).click();
+    expect(ticketButton(root).textContent).toBe(RUN_LABELS.live.running);
+    await vi.waitFor(() =>
+      expect(q(root, ".pg__status").textContent).toContain("ran on the live server"),
+    );
+    expect(ticketButton(root).textContent).toBe("Run it live");
+  });
+
+  it("disables the mode switch while a tool runs", async () => {
+    const root = await mount({ liveUrl: LIVE, live: { fetch: workerFetch } });
+    const browser = q<HTMLInputElement>(root, 'input[value="browser"]');
+    const live = q<HTMLInputElement>(root, 'input[value="live"]');
+    submit(root);
+    expect(browser.disabled).toBe(true);
+    expect(live.disabled).toBe(true);
+    await vi.waitFor(() => expect(root.querySelector(".result")).not.toBeNull());
+    expect(browser.disabled).toBe(false);
+    expect(live.disabled).toBe(false);
+  });
+
+  it("marks transport changes in the message log", async () => {
+    const root = await mount({ liveUrl: LIVE, live: { fetch: workerFetch } });
+    goLive(root);
+    await vi.waitFor(() =>
+      expect(q(root, ".pg__status").textContent).toBe("Connected to the live server."),
+    );
+    const markers = [...root.querySelectorAll(".msg-marker")].map((m) => m.textContent);
+    expect(markers).toEqual([LOG_MARKERS.browser, LOG_MARKERS.live]);
+    expect(markers[1]).toBe("— connected to the live server —");
+  });
+
+  it("rebuilds the tool list from the live server and keeps what was typed", async () => {
+    const root = await mount({ liveUrl: LIVE, live: { fetch: workerFetch } });
+    toolButton(root, "ab_test_plan").click();
+    const before = toolButton(root, "ab_test_plan");
+    q<HTMLInputElement>(root, "#pg-ab_test_plan-baseline_rate").value = "0.05";
+    goLive(root);
+    await vi.waitFor(() =>
+      expect(q(root, ".pg__status").textContent).toBe("Connected to the live server."),
+    );
+    const after = toolButton(root, "ab_test_plan");
+    expect(after).not.toBe(before);
+    expect(root.querySelectorAll(".pg__tool")).toHaveLength(9);
+    expect(after.getAttribute("aria-pressed")).toBe("true");
+    expect(q<HTMLInputElement>(root, "#pg-ab_test_plan-baseline_rate").value).toBe("0.05");
+  });
+
+  it("stays in the browser and says what failed when the live tools/list returns an error", async () => {
+    const close = vi.spyOn(Client.prototype, "close");
+    const root = await mount({ liveUrl: LIVE, live: { fetch: brokenList } });
+    const notice = q(root, ".pg__notice");
+    goLive(root);
+    await vi.waitFor(() =>
+      expect(notice.textContent).toContain("Could not switch to the live server"),
+    );
+    expect(notice.textContent).toContain("Tool listing broke");
+    expect(notice.textContent).toContain(
+      "The tools still run in your browser. Try again, or reload the page.",
+    );
+    expect(notice.getAttribute("role")).toBe("alert");
+    expect(q<HTMLInputElement>(root, 'input[value="browser"]').checked).toBe(true);
+    expect(q<HTMLInputElement>(root, 'input[value="live"]').checked).toBe(false);
+    expect(q(root, ".pg__status").textContent).not.toContain("Connecting");
+    // The client that failed to list the tools is closed; the browser session keeps working.
+    expect(close).toHaveBeenCalled();
+    toolButton(root, "ab_test_plan").click();
+    submit(root);
+    await vi.waitFor(() =>
+      expect(q(root, ".pg__status").textContent).toContain("ab_test_plan ran in your browser."),
+    );
+    // Same alert element, emptied by the new run: it stays in the DOM for the next announcement.
+    expect(q(root, ".pg__notice")).toBe(notice);
+    expect(notice.textContent).toBe("");
   });
 });

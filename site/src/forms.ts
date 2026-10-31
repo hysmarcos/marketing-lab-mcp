@@ -230,10 +230,18 @@ function rangeHint(field: NumberField): string {
 }
 
 function readNumber(field: NumberField, raw: string, issues: FieldIssue[]): number | undefined {
-  const text = raw.trim().replaceAll(",", "");
+  const text = raw.trim();
   const value = Number(text);
   const range = rangeHint(field);
   const enter = range ? ` Enter a number ${range}.` : "";
+  if (text.includes(",")) {
+    // "0,5" is a decimal in many locales and "13,914" a thousands separator; both are ambiguous.
+    issues.push({
+      path: field.path,
+      message: `${nameOf(field)} has a comma. Write the number without commas and use a dot for decimals, for example 0.5.`,
+    });
+    return undefined;
+  }
   if (!/^[-+]?(\d+\.?\d*|\.\d+)(e[-+]?\d+)?$/i.test(text) || !Number.isFinite(value)) {
     issues.push({ path: field.path, message: `${nameOf(field)} must be a number.${enter}` });
     return undefined;
@@ -270,7 +278,8 @@ function readString(field: StringField, raw: string, issues: FieldIssue[]): stri
     });
     return undefined;
   }
-  if (field.pattern !== undefined && !new RegExp(field.pattern, "u").test(raw)) {
+  const pattern = compilePattern(field.pattern);
+  if (pattern && !pattern.test(raw)) {
     const example = field.help?.match(/\(for example ([^)]+)\)/)?.[1];
     issues.push({
       path: field.path,
@@ -279,6 +288,21 @@ function readString(field: StringField, raw: string, issues: FieldIssue[]): stri
     return undefined;
   }
   return raw;
+}
+
+/** The schema's pattern as a RegExp, or undefined when there is none or it does not compile. */
+function compilePattern(pattern: string | undefined): RegExp | undefined {
+  if (pattern === undefined) return undefined;
+  try {
+    return new RegExp(pattern, "u");
+  } catch {
+    // The server checks the pattern anyway; a form that cannot compile it just skips the check.
+    return undefined;
+  }
+}
+
+function items(n: number): string {
+  return `${bound.format(n)} ${n === 1 ? "item" : "items"}`;
 }
 
 function readJson(field: JsonField, raw: string, issues: FieldIssue[]): unknown {
@@ -298,6 +322,22 @@ function readJson(field: JsonField, raw: string, issues: FieldIssue[]): unknown 
       message: `${nameOf(field)} must be a JSON list, written between [ and ].`,
     });
     return undefined;
+  }
+  if (Array.isArray(value)) {
+    if (field.minItems !== undefined && value.length < field.minItems) {
+      issues.push({
+        path: field.path,
+        message: `${nameOf(field)} needs at least ${items(field.minItems)}; it has ${value.length}.`,
+      });
+      return undefined;
+    }
+    if (field.maxItems !== undefined && value.length > field.maxItems) {
+      issues.push({
+        path: field.path,
+        message: `${nameOf(field)} can have at most ${items(field.maxItems)}; it has ${bound.format(value.length)}.`,
+      });
+      return undefined;
+    }
   }
   return value;
 }

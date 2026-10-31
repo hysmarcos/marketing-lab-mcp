@@ -24,7 +24,7 @@ import {
   type Traffic,
 } from "./mcp";
 import { renderResult } from "./render";
-import { renderTicket } from "./ticket";
+import { RUN_LABEL, renderTicket, setTicketRunLabel } from "./ticket";
 
 /**
  * The playground: pick a tool, fill the form generated from its input schema, run it in the page
@@ -37,6 +37,31 @@ export const LIVE_FALLBACK_NOTICE =
 export const LIVE_NOT_DEPLOYED = "The live server is not deployed yet, so the tools run here.";
 export const BROWSER_NOTE = "The MCP server runs inside this page. Nothing is sent anywhere.";
 export const MAX_LOG = 200;
+
+/** The ticket's run button names where the call will run (Ruling 21). */
+export const RUN_LABELS: Record<Mode, { run: string; running: string }> = {
+  browser: { run: "Run in your browser", running: "Running in your browser…" },
+  live: { run: RUN_LABEL, running: "Running on the live server…" },
+};
+
+/** Lines in the message log where the transport changes. */
+export const LOG_MARKERS: Record<Mode, string> = {
+  browser: "— switched to your browser —",
+  live: "— connected to the live server —",
+};
+
+function modeName(mode: Mode): string {
+  return mode === "live" ? "the live server" : "your browser";
+}
+
+/** What failed when a switch of mode fails for a reason other than the live server being down. */
+export function switchFailedNotice(mode: Mode, stayed: Mode, error: unknown): string {
+  const reason = error instanceof Error ? error.message : String(error);
+  return (
+    `Could not switch to ${modeName(mode)}: ${reason}. The tools still run in ${modeName(stayed)}. ` +
+    "Try again, or reload the page."
+  );
+}
 
 export interface PlaygroundState {
   mode: Mode;
@@ -279,28 +304,41 @@ export async function mountPlayground(
   // Message log -----------------------------------------------------------------------------------
   const pending = new Map<unknown, string>();
   let count = 0;
+
+  /** Appends to the log; follows the newest line only if the reader is already at the bottom. */
+  function appendToLog(item: HTMLElement): void {
+    const atBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 24;
+    log.append(item);
+    while (log.childElementCount > MAX_LOG) log.firstElementChild?.remove();
+    if (atBottom) log.scrollTop = log.scrollHeight;
+    logEmpty.hidden = true;
+  }
+
+  function logMarker(mode: Mode): void {
+    appendToLog(el("li", "msg-marker", LOG_MARKERS[mode]));
+  }
+
   function onTraffic(message: Traffic): void {
     const json = message.json;
     if (message.direction === "out" && isRecord(json) && typeof json.method === "string") {
       if ("id" in json) pending.set(json.id, json.method);
     }
+    const what = describeMessage(json, pending);
+    // An answered request no longer needs its method remembered.
+    if (message.direction === "in" && isRecord(json) && !("method" in json)) {
+      pending.delete(json.id);
+    }
     const item = el("li", `msg msg--${message.direction}`);
     const details = el("details", "msg__details");
     const summary = el("summary", "msg__summary");
-    summary.append(
-      el("span", "msg__dir", message.direction),
-      el("span", "msg__what", describeMessage(json, pending)),
-    );
+    summary.append(el("span", "msg__dir", message.direction), el("span", "msg__what", what));
     const text = JSON.stringify(json, null, 2);
     details.open = text.length <= 1200;
     details.append(summary, el("pre", "msg__json", text));
     item.append(details);
-    log.append(item);
-    while (log.childElementCount > MAX_LOG) log.firstElementChild?.remove();
-    log.scrollTop = log.scrollHeight;
+    appendToLog(item);
     count += 1;
     messagesCount.textContent = String(count);
-    logEmpty.hidden = true;
   }
   clearButton.addEventListener("click", () => {
     log.replaceChildren();
@@ -310,10 +348,20 @@ export async function mountPlayground(
   });
 
   // State -----------------------------------------------------------------------------------------
+  /** True while a tool call runs (not while switching mode, so keyboard focus stays on the radio). */
+  let running = false;
+
   function render(): void {
-    notice.textContent = state.notice;
-    notice.hidden = state.notice === "";
-    for (const [mode, radio] of radios) radio.checked = mode === state.mode;
+    // The alert stays in the DOM; only its text changes, so screen readers announce it reliably.
+    if (notice.textContent !== state.notice) notice.textContent = state.notice;
+    for (const [mode, radio] of radios) {
+      radio.checked = mode === state.mode;
+      radio.disabled = running || (mode === "live" && !liveUrl);
+    }
+    const ticket = ticketSlot.querySelector<HTMLElement>(".ticket");
+    if (ticket) {
+      setTicketRunLabel(ticket, RUN_LABELS[state.mode].run, RUN_LABELS[state.mode].running);
+    }
     modeNote.textContent =
       state.mode === "live"
         ? `Calls go to ${liveHost(liveUrl)} over Streamable HTTP.`
@@ -331,13 +379,18 @@ export async function mountPlayground(
   async function useSession(next: Session): Promise<void> {
     const previous = session;
     session = next;
-    if (previous && previous !== next) await previous.client.close().catch(() => {});
+    if (previous && previous !== next) {
+      await previous.client.close().catch(() => {});
+      // Request ids restart with every session; forget the old session's open requests.
+      pending.clear();
+    }
   }
 
   async function fallBackToBrowser(): Promise<void> {
     state = onLiveFailure(state);
     render();
     await useSession(await connect("browser", onTraffic));
+    logMarker("browser");
   }
 
   // Tools and form --------------------------------------------------------------------------------
@@ -445,14 +498,21 @@ export async function mountPlayground(
 
   async function run(name: string, args: Record<string, unknown>, fromTicket: boolean) {
     if (state.busy || !session) return;
+    running = true;
     state = { ...state, busy: true, notice: "" };
-    render();
-    status.textContent = `Running ${name} ${where(state.mode)}…`;
     if (!fromTicket) {
       ticketSlot.replaceChildren(
-        renderTicket({ tool: name, input: args, onRun: () => run(name, args, true) }),
+        renderTicket({
+          tool: name,
+          input: args,
+          onRun: () => run(name, args, true),
+          runLabel: RUN_LABELS[state.mode].run,
+          runningLabel: RUN_LABELS[state.mode].running,
+        }),
       );
     }
+    render();
+    status.textContent = `Running ${name} ${where(state.mode)}…`;
     try {
       let result: CallToolResult;
       try {
@@ -474,6 +534,7 @@ export async function mountPlayground(
       resultSlot.replaceChildren(box);
       status.textContent = `${name} failed.`;
     } finally {
+      running = false;
       state = { ...state, busy: false };
       render();
     }
@@ -497,22 +558,45 @@ export async function mountPlayground(
     void run(name, args, false);
   });
 
+  /** Rebuilds the tool list and the current form from `tools`, keeping what the visitor typed. */
+  function refreshTools(): void {
+    const name = state.tool;
+    const typed = controls?.read();
+    renderToolList();
+    const keep = name && tools.some((t) => t.name === name) ? name : tools[0]?.name;
+    if (!keep) return;
+    selectTool(keep);
+    if (keep === name && typed) controls?.write(typed);
+  }
+
   async function switchMode(mode: Mode): Promise<void> {
-    if (mode === state.mode || state.busy) return;
+    if (mode === state.mode || state.busy) {
+      render();
+      return;
+    }
+    const stayed = state.mode;
     state = { ...state, busy: true, notice: "" };
     render();
     status.textContent =
       mode === "live" ? "Connecting to the live server…" : "Starting the server in your browser…";
+    let next: Session | undefined;
     try {
-      const next = await connect(mode, onTraffic, { ...options.live, url: liveUrl });
-      tools = await listTools(next);
+      next = await connect(mode, onTraffic, { ...options.live, url: liveUrl });
+      const listed = await listTools(next);
       await useSession(next);
+      tools = listed;
       state = { ...state, mode };
+      refreshTools();
+      logMarker(mode);
       status.textContent =
         mode === "live" ? "Connected to the live server." : "The tools run in your browser again.";
     } catch (error) {
-      if (!(error instanceof LiveUnavailableError)) throw error;
-      state = onLiveFailure(state);
+      // Whatever failed, the new client is dropped and the old session keeps running.
+      if (next && next !== session) await next.client.close().catch(() => {});
+      state =
+        error instanceof LiveUnavailableError && mode === "live"
+          ? onLiveFailure(state)
+          : { ...state, mode: stayed, notice: switchFailedNotice(mode, stayed, error) };
       status.textContent = "";
     } finally {
       state = { ...state, busy: false };
@@ -529,6 +613,7 @@ export async function mountPlayground(
   // Start -----------------------------------------------------------------------------------------
   render();
   session = await connect("browser", onTraffic);
+  logMarker("browser");
   tools = await listTools(session);
   renderToolList();
   const first = tools[0];

@@ -213,6 +213,40 @@ describe("argsFromFields", () => {
     ).toMatch(/list/);
   });
 
+  it("checks the number of items in a JSON list", () => {
+    const fields = fieldsFromSchema(schemaOf("attribution_compare"));
+    expect(issuesOf(() => argsFromFields(fields, { journeys: "[]" }))[0]?.message).toMatch(
+      /at least 1 item/,
+    );
+    const many = JSON.stringify(
+      Array.from({ length: 2001 }, () => ({ path: ["email"], conversions: 1, nulls: 1 })),
+    );
+    expect(issuesOf(() => argsFromFields(fields, { journeys: many }))[0]?.message).toMatch(
+      /at most 2,000 items/,
+    );
+  });
+
+  it("asks for a dot instead of a comma in numbers", () => {
+    const fields = fieldsFromSchema(schemaOf("ab_test_plan"));
+    const issues = issuesOf(() =>
+      argsFromFields(fields, { baseline_rate: "0,5", mde_relative: "0.2" }),
+    );
+    expect(issues).toEqual([
+      { path: "baseline_rate", message: expect.stringMatching(/use a dot for decimals/i) },
+    ]);
+    expect(() => argsFromFields(fields, { baseline_rate: "13,914", mde_relative: "0.2" })).toThrow(
+      FormError,
+    );
+  });
+
+  it("skips a pattern the browser cannot compile instead of failing the submit", () => {
+    const fields = fieldsFromSchema({
+      type: "object",
+      properties: { code: { type: "string", pattern: "(unclosed" } },
+    });
+    expect(argsFromFields(fields, { code: "anything" })).toEqual({ code: "anything" });
+  });
+
   it("checks a string pattern", () => {
     const fields = fieldsFromSchema(schemaOf("store_sales"));
     const issues = issuesOf(() =>

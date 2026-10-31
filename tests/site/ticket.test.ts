@@ -7,6 +7,7 @@ import {
   RUN_LABEL,
   RUNNING_LABEL,
   renderTicket,
+  setTicketRunLabel,
   setTicketStamp,
   type TicketStamp,
 } from "../../site/src/ticket";
@@ -116,6 +117,51 @@ describe("renderTicket", () => {
     await vi.waitFor(() => expect(button.textContent).toBe(RUN_LABEL));
     expect(button.disabled).toBe(false);
     expect(ticket.hasAttribute("aria-busy")).toBe(false);
+  });
+
+  it("uses a custom run label and busy label, and keeps Run it live as the default", async () => {
+    expect(runButton(renderTicket({ tool: "t", input, onRun: async () => {} })).textContent).toBe(
+      RUN_LABEL,
+    );
+    let finish: () => void = () => {};
+    const ticket = renderTicket({
+      tool: "ab_test_evaluate",
+      input,
+      onRun: () =>
+        new Promise<void>((resolve) => {
+          finish = resolve;
+        }),
+      runLabel: "Run in your browser",
+      runningLabel: "Running in your browser…",
+    });
+    const button = runButton(ticket);
+    expect(button.textContent).toBe("Run in your browser");
+    button.click();
+    expect(button.textContent).toBe("Running in your browser…");
+    finish();
+    await vi.waitFor(() => expect(button.textContent).toBe("Run in your browser"));
+  });
+
+  it("changes its run label when the mode changes, also in the middle of a run", async () => {
+    let finish: () => void = () => {};
+    const ticket = renderTicket({
+      tool: "ab_test_evaluate",
+      input,
+      onRun: () =>
+        new Promise<void>((resolve) => {
+          finish = resolve;
+        }),
+      runLabel: "Run in your browser",
+    });
+    const button = runButton(ticket);
+    setTicketRunLabel(ticket, "Run it live");
+    expect(button.textContent).toBe("Run it live");
+    button.click();
+    expect(button.textContent).toBe(RUNNING_LABEL);
+    setTicketRunLabel(ticket, "Run in your browser");
+    expect(button.textContent).toBe(RUNNING_LABEL);
+    finish();
+    await vi.waitFor(() => expect(button.textContent).toBe("Run in your browser"));
   });
 
   it("says the run failed and what to do when onRun rejects", async () => {

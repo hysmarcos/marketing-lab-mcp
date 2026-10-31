@@ -83,6 +83,41 @@ describe("formatNumber", () => {
     expect(formatNumber(1.5e-13, "p_value", ctx)).toBe("< 0.0001");
     expect(formatNumber(3486914.42, "median", ctx)).toBe("3,486,914");
     expect(formatNumber(13914, "per_variant", ctx)).toBe("13,914");
-    expect(formatNumber(33.2224, "pct", ctx)).toBe("33.22%");
+    expect(formatNumber(33.2224, "pct", ctx)).toBe("+33.22");
+  });
+
+  it("shows differences between rates in percentage points", () => {
+    const ctx = { root: {} };
+    expect(formatNumber(0.006424, "absolute_diff", ctx)).toBe("0.64 pp");
+    expect(formatNumber(0.0019, "ci_low", ctx)).toBe("0.19 pp");
+    expect(formatNumber(0.0518, "first_touch", { root: {}, parent: "error_vs_truth" })).toBe(
+      "5.18 pp",
+    );
+    const email = { root: { metric: "conversion" } };
+    expect(formatNumber(0.0068, "absolute_uplift", email)).toBe("0.68 pp");
+    // For spend the uplift is money per recipient, not a rate.
+    expect(formatNumber(0.77, "absolute_uplift", { root: { metric: "spend" } })).toBe("0.77");
+  });
+});
+
+describe("labels", () => {
+  it("names the change against the current plan and puts dollars on budget figures", () => {
+    const node = renderResult("budget_optimize", run("budget_optimize"));
+    const labels = [...node.querySelectorAll("dt, .result-record__title")].map(
+      (n) => n.textContent,
+    );
+    expect(labels).toContain("Change vs current (%)");
+    expect(labels).toContain("Allocation ($)");
+    expect(labels).toContain("Media sales ($)");
+    expect(labels).toContain("Total weekly ($)");
+    expect(node.querySelector(".bars__title")?.textContent).toBe("Media-driven sales, median ($)");
+  });
+
+  it("puts reais on Olist revenue", () => {
+    const node = renderResult("store_sales", run("store_sales"));
+    const headers = [...node.querySelectorAll("thead th")].map((n) => n.textContent);
+    expect(headers).toEqual(["Key", "Value (R$)", "Orders", "Revenue (R$)"]);
+    const orders = renderResult("store_sales", run("store_sales", 1));
+    expect([...orders.querySelectorAll("thead th")].map((n) => n.textContent)).toContain("Value");
   });
 });

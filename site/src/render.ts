@@ -39,7 +39,7 @@ function isScalar(value: unknown): value is string | number | boolean | null {
 
 const PERCENT_KEY =
   /(^|_)(rate|share|lift|uplift|prob|ci_low|ci_high|absolute_diff|split|confidence)(_|$)/;
-const PERCENT_PARENTS = new Set(["truth", "error_vs_truth"]);
+const PERCENT_PARENTS = new Set(["truth"]);
 const RATE_METRICS = new Set(["conversion", "visit", "late_delivery_rate"]);
 
 /** Whether a number under `key` is a fraction to show as a percentage. */
@@ -58,15 +58,63 @@ const twoDecimals = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 })
 const significant = new Intl.NumberFormat("en-US", { maximumSignificantDigits: 4 });
 const percent = new Intl.NumberFormat("en-US", { style: "percent", maximumFractionDigits: 2 });
 
+const POINT_KEYS = new Set(["absolute_diff", "ci_low", "ci_high"]);
+
+/** Whether a number under `key` is a difference between two rates, shown in percentage points. */
+export function isPoints(key: string, ctx: Context): boolean {
+  if (ctx.parent === "error_vs_truth") return true;
+  if (key === "absolute_uplift") {
+    const metric = typeof ctx.root.metric === "string" ? ctx.root.metric : "";
+    return RATE_METRICS.has(metric);
+  }
+  return POINT_KEYS.has(key);
+}
+
+const signed = new Intl.NumberFormat("en-US", {
+  maximumFractionDigits: 2,
+  signDisplay: "exceptZero",
+});
+
 export function formatNumber(value: number, key = "", ctx: Context = { root: {} }): string {
   if (!Number.isFinite(value)) return String(value);
   if (/p_value$/.test(key)) return value < 0.0001 ? "< 0.0001" : significant.format(value);
+  if (isPoints(key, ctx)) return `${twoDecimals.format(value * 100)} pp`;
   if (isPercent(key, ctx)) return percent.format(value);
-  if (key === "pct") return `${twoDecimals.format(value)}%`;
+  // `pct` is already in percent (the label says so).
+  if (key === "pct") return signed.format(value);
   const abs = Math.abs(value);
   if (Number.isInteger(value) || abs >= 1000) return grouped.format(value);
   if (abs >= 1) return twoDecimals.format(value);
   return significant.format(value);
+}
+
+const LABELS: Record<string, string> = { pct: "Change vs current (%)" };
+const BUDGET_MONEY = new Set([
+  "weekly_spend",
+  "allocation",
+  "media_sales",
+  "total_weekly",
+  "media_sales_diff_median",
+]);
+const OLIST_MONEY = new Set(["revenue", "avg_monetary"]);
+
+/** "$" for the budget tools' money, "R$" for Olist revenue, otherwise undefined. */
+export function currencyOf(key: string, ctx: Context): string | undefined {
+  // The budget tools are the ones with a planning horizon; the MMM is in dollars.
+  if ("horizon_weeks" in ctx.root && BUDGET_MONEY.has(key)) return "$";
+  const olist = typeof ctx.root.source === "string" && ctx.root.source.startsWith("Olist");
+  if (olist && (OLIST_MONEY.has(key) || (key === "value" && ctx.root.metric === "revenue"))) {
+    return "R$";
+  }
+  return undefined;
+}
+
+/** Column, figure and record labels: humanized, with the unit where the number has one. */
+export function labelOf(key: string, ctx: Context): string {
+  const fixed = LABELS[key];
+  if (fixed) return fixed;
+  const currency = currencyOf(key, ctx);
+  return currency ? `${humanize(key)} (${currency})` : humanize(key);
 }
 
 function formatValue(value: unknown, key: string, ctx: Context): string {
@@ -227,7 +275,7 @@ export function comparisonsOf(structured: Json): Comparison[] {
     if (typeof plan === "number" && typeof diff === "number") {
       const current = plan - diff;
       found.push({
-        title: "Media-driven sales, median",
+        title: "Media-driven sales, median ($)",
         aLabel: "Current plan",
         bLabel: "This plan",
         items: [
@@ -302,7 +350,7 @@ export function renderTable(caption: string, rows: Json[], ctx: Context): HTMLEl
   const head = el("thead");
   const headRow = el("tr");
   for (const column of columns) {
-    const th = el("th", "", humanize(column));
+    const th = el("th", "", labelOf(column, ctx));
     th.scope = "col";
     headRow.append(th);
   }
@@ -354,12 +402,12 @@ function renderMatrix(key: string, matrix: Record<string, Json>, ctx: Context): 
 
 function renderRecord(key: string, record: Json, ctx: Context): HTMLElement {
   const block = el("div", "result-record");
-  block.append(el("h4", "result-record__title", humanize(key)));
+  block.append(el("h4", "result-record__title", labelOf(key, ctx)));
   const list = el("dl", "result-figures");
   for (const [k, v] of Object.entries(record)) {
     const item = el("div", "result-figures__item");
     item.append(
-      el("dt", "", humanize(k)),
+      el("dt", "", labelOf(k, { ...ctx, parent: key })),
       el("dd", "", formatValue(v, k, { ...ctx, parent: key })),
     );
     list.append(item);
@@ -390,7 +438,7 @@ export function renderResult(toolName: string, structured: Json, summary?: strin
     if (SKIP.has(key) || value === null || value === undefined) continue;
     if (isScalar(value)) {
       const item = el("div", "result-figures__item");
-      item.append(el("dt", "", humanize(key)), el("dd", "", formatValue(value, key, ctx)));
+      item.append(el("dt", "", labelOf(key, ctx)), el("dd", "", formatValue(value, key, ctx)));
       figures.append(item);
     } else if (Array.isArray(value)) {
       if (value.length === 0) continue;

@@ -1,4 +1,5 @@
 // @vitest-environment happy-dom
+import { ProtocolError } from "@modelcontextprotocol/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   callTool,
@@ -124,6 +125,73 @@ describe("connect('live')", () => {
     ).rejects.toBeInstanceOf(LiveUnavailableError);
     await session.client.close();
   });
+});
+
+describe("live errors that are answers, not outages", () => {
+  it("passes a JSON-RPC error from the live server through as a ProtocolError", async () => {
+    const session = await connect("live", () => {}, { url: LIVE, fetch: workerFetch });
+    const failure = callTool(session, "no_such_tool", {});
+    await expect(failure).rejects.toBeInstanceOf(ProtocolError);
+    await expect(failure).rejects.not.toBeInstanceOf(LiveUnavailableError);
+    await session.client.close();
+  });
+
+  it("returns a tool error (isError) as a result instead of throwing", async () => {
+    const session = await connect("live", () => {}, { url: LIVE, fetch: workerFetch });
+    const result = await callTool(session, "ab_test_plan", { baseline_rate: 3, mde_relative: 0.2 });
+    expect(result.isError).toBe(true);
+    await session.client.close();
+  });
+});
+
+describe("live failures after connecting", () => {
+  /** A fetch that serves the Worker until `mode` changes. */
+  function switchable() {
+    const control = { mode: "up" as "up" | "http500" | "silent" };
+    const fetch: typeof globalThis.fetch = (input, init) => {
+      if (control.mode === "http500") {
+        return Promise.resolve(new Response("Internal error", { status: 500 }));
+      }
+      if (control.mode === "silent") return new Promise<Response>(() => {});
+      return workerFetch(input, init);
+    };
+    return { control, fetch };
+  }
+
+  it("maps an HTTP error status during a tool call to LiveUnavailableError", async () => {
+    const { control, fetch } = switchable();
+    const session = await connect("live", () => {}, { url: LIVE, fetch });
+    control.mode = "http500";
+    await expect(
+      callTool(session, "ab_test_plan", { baseline_rate: 0.03, mde_relative: 0.2 }),
+    ).rejects.toBeInstanceOf(LiveUnavailableError);
+    await session.client.close();
+  });
+
+  it.each(["callTool", "listTools"] as const)(
+    "gives up on %s after 10 seconds without an answer",
+    async (which) => {
+      const { control, fetch } = switchable();
+      const session = await connect("live", () => {}, { url: LIVE, fetch });
+      vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+      control.mode = "silent";
+      const pending =
+        which === "callTool"
+          ? callTool(session, "ab_test_plan", { baseline_rate: 0.03, mde_relative: 0.2 })
+          : listTools(session);
+      const settled = expect(pending).rejects.toBeInstanceOf(LiveUnavailableError);
+      let done = false;
+      pending.catch(() => {
+        done = true;
+      });
+      await vi.advanceTimersByTimeAsync(LIVE_TIMEOUT_MS - 1);
+      expect(done).toBe(false);
+      await vi.advanceTimersByTimeAsync(1);
+      await settled;
+      vi.useRealTimers();
+      await session.client.close();
+    },
+  );
 });
 
 describe("onLiveFailure", () => {

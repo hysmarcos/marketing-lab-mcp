@@ -27,6 +27,8 @@ import { parseStream, streamToTranscript } from "./stream-to-transcript";
 
 const ROOT = resolve(import.meta.dirname, "..");
 export const LOCAL_SERVER_NOTE = "stdio (local build of this repo)";
+/** A recording that runs longer than this is stopped and fails. */
+export const RECORD_TIMEOUT_MS = 10 * 60 * 1000;
 
 const { values } = parseArgs({
   options: {
@@ -92,12 +94,32 @@ function runClaude(rawPath: string): Promise<void> {
   return new Promise((done, reject) => {
     const child = spawn("claude", args, { cwd: workdir, stdio: ["ignore", "pipe", "inherit"] });
     const chunks: Buffer[] = [];
+    let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      console.error(
+        `claude is still running after ${RECORD_TIMEOUT_MS / 60_000} minutes; stopping it.`,
+      );
+      child.kill();
+      // If the process ignores the first signal, force it after a short wait.
+      setTimeout(() => child.kill("SIGKILL"), 5_000).unref();
+    }, RECORD_TIMEOUT_MS);
     child.stdout.on("data", (chunk: Buffer) => chunks.push(chunk));
-    child.on("error", reject);
+    child.on("error", (error) => {
+      clearTimeout(timer);
+      reject(error);
+    });
     child.on("close", (code) => {
+      clearTimeout(timer);
       writeFileSync(rawPath, Buffer.concat(chunks));
       rmSync(workdir, { recursive: true, force: true });
-      if (code === 0) done();
+      if (timedOut) {
+        reject(
+          new Error(
+            `claude did not finish within ${RECORD_TIMEOUT_MS / 60_000} minutes and was stopped; partial stream in ${rawPath}`,
+          ),
+        );
+      } else if (code === 0) done();
       else reject(new Error(`claude exited with code ${code}; raw stream in ${rawPath}`));
     });
   });

@@ -177,6 +177,10 @@ describe("committed transcripts", () => {
     /session_id/,
     /toolu_/,
     /"cwd"/,
+    /\w+@\w+\.\w+/, // e-mail address
+    /\/home\//,
+    /\/tmp/,
+    /hoyos/i,
   ];
   it.each(files)("%s holds no local paths, user names or session details", (name) => {
     const text = raw.get(name) as string;
@@ -368,6 +372,13 @@ describe("transcript tabs", () => {
     expect(tabs.map((t) => t.tabIndex)).toEqual([0, -1]);
     expect(panels.map((p) => p.hidden)).toEqual([false, true]);
     expect(tabs[1]?.lang).toBe("es");
+    // The language is on the conversation's own words, not on the whole panel.
+    expect(panels.map((p) => p.lang)).toEqual(["", ""]);
+    const spanish = panels[1] as HTMLElement;
+    expect(spanish.querySelector<HTMLElement>(".bubble")?.lang).toBe("es");
+    expect(spanish.querySelector<HTMLElement>(".answer")?.lang).toBe("es");
+    expect(spanish.querySelector(".ticket")?.closest("[lang]")).toBeNull();
+    expect(spanish.querySelector<HTMLElement>(".tr__meta")?.lang).toBe("en");
     expect(panels[0]?.getAttribute("aria-labelledby")).toBe(tabs[0]?.id);
     tabs[0]?.focus();
     tabs[0]?.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));

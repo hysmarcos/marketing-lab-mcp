@@ -7,6 +7,7 @@ import {
   mountPlayground,
   RUN_LABELS,
 } from "../../site/src/playground";
+import { sharedRunner } from "../../site/src/session";
 import worker from "../../src/runtimes/worker";
 
 const LIVE = "https://worker.test/mcp";
@@ -245,6 +246,32 @@ describe("playground", () => {
     await vi.waitFor(() => expect(root.querySelector(".result")).not.toBeNull());
     expect(browser.disabled).toBe(false);
     expect(live.disabled).toBe(false);
+  });
+
+  it("disables the mode switch while a transcript ticket runs, so the session cannot be swapped", async () => {
+    const root = await mount({ liveUrl: LIVE, live: { fetch: workerFetch } });
+    const browser = q<HTMLInputElement>(root, 'input[value="browser"]');
+    const live = q<HTMLInputElement>(root, 'input[value="live"]');
+    const runShared = await sharedRunner();
+
+    const pending = runShared("ab_test_plan", { baseline_rate: 0.03, mde_relative: 0.2 });
+    expect(browser.disabled).toBe(true);
+    expect(live.disabled).toBe(true);
+    // A switch asked for in the middle of the call does nothing: the radios snap back.
+    goLive(root);
+    const result = await pending;
+    expect(result.isError).toBeFalsy();
+    await vi.waitFor(() => expect(live.disabled).toBe(false));
+    expect(browser.disabled).toBe(false);
+    expect(browser.checked).toBe(true);
+    expect(live.checked).toBe(false);
+    const markers = [...root.querySelectorAll(".msg-marker")].map((m) => m.textContent);
+    expect(markers).toEqual([LOG_MARKERS.browser]);
+    // Once the call is over, a switch works again.
+    goLive(root);
+    await vi.waitFor(() =>
+      expect(q(root, ".pg__status").textContent).toBe("Connected to the live server."),
+    );
   });
 
   it("marks transport changes in the message log", async () => {

@@ -345,8 +345,19 @@ export async function mountPlayground(
   });
 
   // State -----------------------------------------------------------------------------------------
-  /** True while a tool call runs (not while switching mode, so keyboard focus stays on the radio). */
-  let running = false;
+  /**
+   * Tool calls in flight, from the form or from a transcript ticket. While there is one, the mode
+   * radios are disabled (not while switching mode, so keyboard focus stays on the radio) and no
+   * switch can replace the session under the call.
+   */
+  let activeRuns = 0;
+  let switching = false;
+  /** The switch in progress, so a ticket that is clicked meanwhile waits for the new session. */
+  let pendingSwitch: Promise<void> | undefined;
+
+  function syncBusy(): void {
+    state = { ...state, busy: activeRuns > 0 || switching };
+  }
 
   function render(): void {
     // The alert stays in the DOM; only its text changes, so screen readers announce it reliably.
@@ -355,7 +366,7 @@ export async function mountPlayground(
     setSharedMode(state.mode);
     for (const [mode, radio] of radios) {
       radio.checked = mode === state.mode;
-      radio.disabled = running || (mode === "live" && !liveUrl);
+      radio.disabled = activeRuns > 0 || (mode === "live" && !liveUrl);
     }
     const ticket = ticketSlot.querySelector<HTMLElement>(".ticket");
     if (ticket) {
@@ -500,19 +511,30 @@ export async function mountPlayground(
    * fallback to the browser when the live server fails. The messages appear in this log.
    */
   async function runShared(name: string, args: Record<string, unknown>): Promise<CallToolResult> {
+    if (pendingSwitch) await pendingSwitch;
+    activeRuns += 1;
+    syncBusy();
+    render();
     try {
-      return await callTool(current(), name, args);
-    } catch (error) {
-      if (!(error instanceof LiveUnavailableError)) throw error;
-      if (current().mode === "live") await fallBackToBrowser();
-      return await callTool(current(), name, args);
+      try {
+        return await callTool(current(), name, args);
+      } catch (error) {
+        if (!(error instanceof LiveUnavailableError)) throw error;
+        if (current().mode === "live") await fallBackToBrowser();
+        return await callTool(current(), name, args);
+      }
+    } finally {
+      activeRuns -= 1;
+      syncBusy();
+      render();
     }
   }
 
   async function run(name: string, args: Record<string, unknown>, fromTicket: boolean) {
     if (state.busy || !session) return;
-    running = true;
-    state = { ...state, busy: true, notice: "" };
+    activeRuns += 1;
+    state = { ...state, notice: "" };
+    syncBusy();
     if (!fromTicket) {
       ticketSlot.replaceChildren(
         renderTicket({
@@ -547,8 +569,8 @@ export async function mountPlayground(
       resultSlot.replaceChildren(box);
       status.textContent = `${name} failed.`;
     } finally {
-      running = false;
-      state = { ...state, busy: false };
+      activeRuns -= 1;
+      syncBusy();
       render();
     }
   }
@@ -587,8 +609,20 @@ export async function mountPlayground(
       render();
       return;
     }
+    const done = applySwitch(mode);
+    pendingSwitch = done;
+    try {
+      await done;
+    } finally {
+      if (pendingSwitch === done) pendingSwitch = undefined;
+    }
+  }
+
+  async function applySwitch(mode: Mode): Promise<void> {
     const stayed = state.mode;
-    state = { ...state, busy: true, notice: "" };
+    switching = true;
+    state = { ...state, notice: "" };
+    syncBusy();
     render();
     status.textContent =
       mode === "live" ? "Connecting to the live server…" : "Starting the server in your browser…";
@@ -612,7 +646,8 @@ export async function mountPlayground(
           : { ...state, mode: stayed, notice: switchFailedNotice(mode, stayed, error) };
       status.textContent = "";
     } finally {
-      state = { ...state, busy: false };
+      switching = false;
+      syncBusy();
       render();
     }
   }

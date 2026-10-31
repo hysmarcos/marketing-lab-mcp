@@ -87,9 +87,15 @@ function el<K extends keyof HTMLElementTagNameMap>(
   return node;
 }
 
-function userItem(text: string): HTMLLIElement {
+/**
+ * `lang` goes on the words the conversation is written in (the user's bubble and Claude's answer),
+ * not on the tickets, labels and footer, which are English interface text.
+ */
+function userItem(text: string, lang: string): HTMLLIElement {
   const li = el("li", "chat__item chat__item--user");
-  li.append(el("p", "bubble", text));
+  const bubble = el("p", "bubble", text);
+  bubble.lang = lang;
+  li.append(bubble);
   return li;
 }
 
@@ -170,10 +176,11 @@ export function renderConversation(transcript: Transcript): HTMLOListElement {
         list.append(more, ...hidden);
       }
     } else if (group.type === "user") {
-      list.append(userItem(group.text));
+      list.append(userItem(group.text, transcript.lang));
     } else {
       const li = el("li", "chat__item chat__item--assistant");
       const answer = el("div", "answer");
+      answer.lang = transcript.lang;
       answer.append(renderMarkdown(group.text));
       li.append(whoLabel(), answer);
       list.append(li);
@@ -193,7 +200,7 @@ export function renderHeroItems(
 ): HTMLLIElement[] {
   const items: HTMLLIElement[] = [];
   const first = transcript.steps[0];
-  if (first?.type === "user") items.push(userItem(first.text));
+  if (first?.type === "user") items.push(userItem(first.text, transcript.lang));
   const calls = transcript.steps.filter((s): s is ToolCallStep => s.type === "tool_call");
   for (const step of calls.slice(0, VISIBLE_CALLS)) items.push(callItem(step, false));
   const answerStep = transcript.steps.findLast((s): s is TextStep => s.type === "assistant");
@@ -201,6 +208,7 @@ export function renderHeroItems(
   li.append(whoLabel());
   // The opening of the answer, faded out at a fixed height; the whole text is one link away.
   const preview = el("div", "answer answer--preview");
+  preview.lang = transcript.lang;
   preview.append(renderMarkdown(answerStep?.text ?? "", { plainHeadings: true }));
   // Tables cut off by the fade are not keyboard stops here; the full view has them.
   for (const table of preview.querySelectorAll<HTMLElement>(".md__table")) {
@@ -248,7 +256,6 @@ export function renderTranscriptTabs(transcripts: Transcript[]): HTMLElement {
     tab.setAttribute("aria-controls", `tr-panel-${transcript.id}`);
     const panel = el("div", "tr__panel");
     panel.id = `tr-panel-${transcript.id}`;
-    panel.lang = transcript.lang;
     panel.setAttribute("role", "tabpanel");
     panel.setAttribute("aria-labelledby", tab.id);
     panel.tabIndex = 0;

@@ -29,14 +29,58 @@ describe("budget tools", () => {
     expect(text(r).length).toBeLessThanOrEqual(1200);
   });
 
-  it("budget_simulate returns a tool error naming the valid channels", async () => {
+  it("budget_simulate rejects an unknown channel at schema level and names the key", async () => {
     const r = await client.callTool({
       name: "budget_simulate",
       arguments: { weekly_spend: { radio: 100 } },
     });
     expect(r.isError).toBe(true);
     expect(text(r)).toContain("radio");
-    expect(text(r)).toContain("facebook");
+  });
+
+  it("budget_simulate rejects negative spend", async () => {
+    const r = await client.callTool({
+      name: "budget_simulate",
+      arguments: { weekly_spend: { tv: -5 } },
+    });
+    expect(r.isError).toBe(true);
+  });
+
+  it("budget_optimize rejects an unknown channel in min and max", async () => {
+    for (const field of ["min", "max"]) {
+      const r = await client.callTool({
+        name: "budget_optimize",
+        arguments: { [field]: { radio: 1 } },
+      });
+      expect(r.isError).toBe(true);
+      expect(text(r)).toContain("radio");
+    }
+  });
+
+  it("lists the five channels as properties in the input schema of all three fields", async () => {
+    const { tools } = await client.listTools();
+    const channels = ["tv", "ooh", "print", "facebook", "search"];
+    const props = (name: string, field: string) => {
+      const schema = tools.find((t) => t.name === name)?.inputSchema as {
+        properties: Record<string, { properties?: Record<string, unknown> }>;
+      };
+      return Object.keys(schema.properties[field]?.properties ?? {});
+    };
+    expect(props("budget_simulate", "weekly_spend")).toEqual(channels);
+    expect(props("budget_optimize", "min")).toEqual(channels);
+    expect(props("budget_optimize", "max")).toEqual(channels);
+  });
+
+  it("examples use only the short channel names", () => {
+    const short = new Set(["tv", "ooh", "print", "facebook", "search"]);
+    for (const t of TOOLS.filter((x) => x.name.startsWith("budget_"))) {
+      for (const e of t.examples) {
+        for (const field of ["weekly_spend", "min", "max"]) {
+          const obj = (e.args as Record<string, Record<string, number> | undefined>)[field] ?? {};
+          for (const k of Object.keys(obj)) expect(short.has(k)).toBe(true);
+        }
+      }
+    }
   });
 
   it("budget_simulate flags out-of-range spend in the summary", async () => {

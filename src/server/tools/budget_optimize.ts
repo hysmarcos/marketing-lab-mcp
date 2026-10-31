@@ -2,6 +2,7 @@ import { z } from "zod";
 import data from "../../../data/mmm_results.json";
 import { type MmmResults, money, type OptimizeResult, optimizeBudget } from "../../core/budget";
 import { MAX_SUMMARY_LENGTH, type ToolSpec } from "../tool";
+import { channelAmounts } from "./budget_schema";
 
 const results = data as unknown as MmmResults;
 
@@ -13,17 +14,15 @@ const input = z.strictObject({
     .describe(
       "Total budget to split across the five channels, in dollars per week. Default: the current weekly total (about $41,100). Must be at most 5 times the current total.",
     ),
-  min: z
-    .record(z.string(), z.number())
+  min: channelAmounts("Lowest weekly spend to force")
     .optional()
     .describe(
-      "Lowest weekly spend, in dollars, to force on a channel, e.g. {\"search\": 8000}. Keys are 'tv', 'ooh', 'print', 'facebook', 'search' ('tv_S' style also works). Channels you leave out have a minimum of 0.",
+      "Minimum weekly spend per channel, in dollars. Channels you leave out have a minimum of 0.",
     ),
-  max: z
-    .record(z.string(), z.number())
+  max: channelAmounts("Highest weekly spend to allow")
     .optional()
     .describe(
-      "Highest weekly spend, in dollars, to allow on a channel, e.g. {\"tv\": 5000}. Keys are 'tv', 'ooh', 'print', 'facebook', 'search' ('tv_S' style also works). Channels you leave out are capped at 1.5 times the highest weekly spend seen in the data.",
+      "Maximum weekly spend per channel, in dollars. Channels you leave out are capped at 1.5 times the highest weekly spend seen in the data.",
     ),
 });
 
@@ -50,7 +49,7 @@ export const budgetOptimize: ToolSpec<typeof input, OptimizeResult> = {
   name: "budget_optimize",
   title: "Budget optimizer",
   description:
-    "Use to find how to split a weekly marketing budget across channels to get the most media-driven sales. Reads a Bayesian marketing mix model (PyMC-Marketing) fitted on Meta Robyn's simulated demo dataset, so the channels are tv, ooh (out-of-home), print, facebook and search, and the numbers describe that demo business, not yours. It spreads the total in 200 small steps, each to the channel with the biggest expected gain at that point (saturation and carry-over from earlier weeks included), within optional per-channel minimums and maximums. It returns the weekly dollars per channel, the media-driven sales over a 13-week horizon as a median with a 90% band (200 posterior draws), and the gain over the current plan. The default total is the current weekly spend. Allocations the model cannot support are flagged: a channel above the highest weekly spend seen in the data means the model is extrapolating. The optimum is approximate and the data is a fixed snapshot; this illustrates the method, not advice for a real budget.",
+    "Use to find how to split a weekly marketing budget across channels to get the most media-driven sales. Reads a Bayesian marketing mix model (PyMC-Marketing) fitted on Meta Robyn's simulated demo dataset, so the channels are tv, ooh (out-of-home), print, facebook and search, and the numbers describe that demo business, not yours. It spreads the total in 200 small steps, each to the channel with the biggest expected gain at that point (saturation and carry-over from earlier weeks included), within optional per-channel minimums and maximums. It returns the weekly dollars per channel, the media-driven sales over a 13-week horizon as a median with a 90% band (200 posterior draws), and the gain over the current plan (vs_current.media_sales_diff_median is the plan's median minus the current plan's median, not a median of paired differences; vs_current.pct is a percentage, so 33.2 means +33.2%). All dollar values are in the demo dataset's simulated dollars. The default total is the current weekly spend. Allocations the model cannot support are flagged: a channel above the highest weekly spend seen in the data means the model is extrapolating. The optimum is approximate and the data is a fixed snapshot; this illustrates the method, not advice for a real budget.",
   input,
   run: (args) => optimizeBudget(results, args),
   summarize,

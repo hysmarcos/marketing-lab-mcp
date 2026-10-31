@@ -103,7 +103,7 @@ export function adstockedSpend(
  * the part that comes from the real history. It lets the optimizer try many spend levels
  * without redoing the convolution, and avoids allocating in the simulator's inner loop.
  */
-function adstockCoefficients(
+export function adstockCoefficients(
   alpha: number,
   history: number[],
   weeks: number,
@@ -193,11 +193,12 @@ function toChannel(key: string, where: string): Channel {
 }
 
 function parseChannelValues(
-  input: Record<string, number> | undefined,
+  input: Record<string, number | undefined> | undefined,
   where: string,
 ): Partial<Record<Channel, number>> {
   const out: Partial<Record<Channel, number>> = {};
   for (const [key, value] of Object.entries(input ?? {})) {
+    if (value === undefined) continue;
     const channel = toChannel(key, where);
     if (!Number.isFinite(value) || value < 0) {
       throw new ToolInputError(
@@ -276,7 +277,7 @@ export type SimulateResult = {
 
 export function simulateBudget(
   results: MmmResults,
-  args: { weekly_spend?: Record<string, number> },
+  args: { weekly_spend?: Record<string, number | undefined> },
 ): SimulateResult {
   const given = parseChannelValues(args.weekly_spend, "weekly_spend");
   const plan = {} as Plan;
@@ -319,8 +320,8 @@ export function optimizeBudget(
   results: MmmResults,
   args: {
     total_weekly?: number;
-    min?: Record<string, number>;
-    max?: Record<string, number>;
+    min?: Record<string, number | undefined>;
+    max?: Record<string, number | undefined>;
   },
 ): OptimizeResult {
   const currentTotal = CHANNELS.reduce((s, c) => s + results.plans.current[c], 0);

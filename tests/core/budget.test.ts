@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import data from "../../data/mmm_results.json";
 import {
+  adstockCoefficients,
   adstockedSpend,
   adstockWeights,
   CHANNELS,
@@ -65,6 +66,35 @@ describe("adstockedSpend", () => {
     expect(x[0]).toBeCloseTo(6, 12);
     expect(x[1]).toBeCloseTo(4, 12);
   });
+});
+
+describe("adstockCoefficients (fast path) equals the literal adstockedSpend", () => {
+  // Small deterministic pseudo-random generator so the cases are reproducible.
+  let seed = 12345;
+  const rand = () => {
+    seed = (seed * 1664525 + 1013904223) % 4294967296;
+    return seed / 4294967296;
+  };
+  for (const h of [0, 3, 7]) {
+    it(`history length ${h}`, () => {
+      const weeks = 13;
+      const w = new Float64Array(h + 1);
+      const a = new Float64Array(weeks);
+      const b = new Float64Array(weeks);
+      for (let trial = 0; trial < 20; trial++) {
+        const alpha = rand();
+        const spend = rand() * 50000;
+        const history = Array.from({ length: h }, () => rand() * 30000);
+        const literal = adstockedSpend(alpha, history, spend, weeks);
+        adstockCoefficients(alpha, history, weeks, w, a, b);
+        for (let t = 0; t < weeks; t++) {
+          const fast = (a[t] as number) * spend + (b[t] as number);
+          const want = literal[t] as number;
+          expect(Math.abs(fast - want)).toBeLessThanOrEqual(1e-12 * Math.max(1, Math.abs(want)));
+        }
+      }
+    });
+  }
 });
 
 describe("simulateBudget", () => {
@@ -163,6 +193,17 @@ describe("optimizeBudget", () => {
     const out = optimizeBudget(results, { total_weekly: 20000 });
     expect(Math.abs(sum(out.allocation) - 20000)).toBeLessThan(1);
     expect(out.vs_current.media_sales_diff_median).toBeLessThan(0);
+  });
+
+  it("flags out-of-range channels with a warning when the default max allows extrapolation", () => {
+    // Default max is 1.5x the observed maximum, so a big enough total pushes a channel past it.
+    const out = optimizeBudget(results, { total_weekly: CURRENT_TOTAL * 4 });
+    expect(out.out_of_range.length).toBeGreaterThan(0);
+    for (const c of out.out_of_range) {
+      expect(out.warnings.some((w) => w.startsWith(`${c}:`))).toBe(true);
+    }
+    // Within the observed range there is nothing to flag.
+    expect(optimizeBudget(results, {}).out_of_range).toEqual([]);
   });
 
   it("rejects unknown channels in min and max", () => {

@@ -31,18 +31,8 @@ if (animate) {
   }
 }
 
-// Hero: one static tool call until the transcript player (Task 15) replaces it. The tools (and
-// their data) are a large chunk, so they load after the shell is wired up.
-const { TOOLS } = await import("../../src/server/tools");
-const example = TOOLS.find((tool) => tool.name === "ab_test_evaluate")?.examples[0];
-if (!example) throw new Error("ab_test_evaluate has no example input.");
-const call = document.createElement("li");
-call.className = "chat__item chat__item--tool";
-if (animate) call.dataset.reveal = "pending";
-call.append(renderTicket({ tool: "ab_test_evaluate", input: example.args }));
-chat.append(call);
-
-if (animate) {
+function reveal(): void {
+  if (!animate) return;
   const items = [...chat.querySelectorAll<HTMLElement>(".chat__item")];
   items.forEach((item, i) => {
     setTimeout(
@@ -52,4 +42,22 @@ if (animate) {
       150 + REVEAL_MS * i,
     );
   });
+}
+
+// Hero: one static tool call until the transcript player (Task 15) replaces it. The tools (and
+// their data) are a large chunk, so they load after the shell is wired up. If that chunk fails to
+// load, the user bubble is still revealed instead of staying hidden.
+try {
+  const { TOOLS } = await import("../../src/server/tools");
+  const example = TOOLS.find((tool) => tool.name === "ab_test_evaluate")?.examples[0];
+  if (!example) throw new Error("ab_test_evaluate has no example input.");
+  const call = document.createElement("li");
+  call.className = "chat__item chat__item--tool";
+  if (animate) call.dataset.reveal = "pending";
+  call.append(renderTicket({ tool: "ab_test_evaluate", input: example.args }));
+  chat.append(call);
+} catch (error) {
+  console.error("Could not load the tools for the hero.", error);
+} finally {
+  reveal();
 }

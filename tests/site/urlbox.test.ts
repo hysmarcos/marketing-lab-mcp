@@ -101,6 +101,24 @@ describe("wireCopyButton", () => {
     expect(copy.textContent).toBe("Copy URL");
   });
 
+  it("resets the label when a failure follows a success within two seconds", async () => {
+    vi.useFakeTimers();
+    let refuse = false;
+    mockClipboard(() => (refuse ? Promise.reject(new Error("denied")) : Promise.resolve()));
+    const copy = document.createElement("button");
+    copy.textContent = "Copy URL";
+    const status = document.createElement("p");
+    wireCopyButton(copy, () => "x", { status, failOnButton: false });
+    copy.click();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(copy.textContent).toBe(COPIED_LABEL);
+    refuse = true;
+    copy.click();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(copy.textContent).toBe("Copy URL");
+    expect(status.textContent).toBe(COPY_FAILED);
+  });
+
   it("puts the failure on the button when there is no status line", async () => {
     mockClipboard(() => Promise.reject(new Error("denied")));
     const copy = document.createElement("button");

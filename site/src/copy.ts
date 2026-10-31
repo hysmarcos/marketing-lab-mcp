@@ -41,6 +41,9 @@ export function wireCopyButton(
         timer = setTimeout(() => {
           button.textContent = label;
         }, COPIED_MS);
+      } else {
+        // A success just before may have left "Copied" on the button; its timer was cleared.
+        button.textContent = label;
       }
     }
   });

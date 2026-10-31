@@ -61,6 +61,11 @@ export function setPlaygroundStarter(start: () => void): void {
   starter = start;
 }
 
+/** Starts loading the playground now (for example when a part of the page will need it soon). */
+export function startPlayground(): void {
+  starter?.();
+}
+
 /** The runner, once the playground has connected; starts the playground if it has not yet. */
 export function sharedRunner(): Promise<ToolRunner> {
   if (runner) return Promise.resolve(runner);

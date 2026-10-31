@@ -215,6 +215,160 @@
         </div>
       </section>
 
+      <section class="section section--wide" id="tools" aria-labelledby="tools-title">
+        <h2 class="display section__title" id="tools-title">The nine tools</h2>
+        <div class="section__body">
+          <p class="bento__intro">
+            Each tile runs a tool's first example in your browser, with the same code the server
+            uses. Pick a tool name to open it in the playground.
+          </p>
+          <!-- Views are drawn by bento.ts from the real tool output when a tile comes into view.
+               Their boxes have a fixed height, so nothing moves when they fill in. -->
+          <!-- biome-ignore lint/a11y/noRedundantRoles: Safari drops list semantics when list-style is none -->
+          <ul class="bento" role="list" data-bento>
+            <li class="bento__cell bento__cell--ab">
+              <h3 class="bento__title">A/B tests</h3>
+              <p class="bento__text">
+                Did the variant really win? And how many visitors does the next test need?
+              </p>
+              <figure class="viz viz--ab" data-viz="ab" data-examples="ab_test_evaluate">
+                <div class="viz__body" data-viz-body>
+                  <p class="viz__wait">Running the example in your browser.</p>
+                </div>
+                <figcaption class="viz__caption">
+                  ab_test_evaluate, example "Hillstrom-sized email test"
+                </figcaption>
+              </figure>
+              <!-- biome-ignore lint/a11y/noRedundantRoles: Safari drops list semantics when list-style is none -->
+              <ul class="bento__tools" role="list">
+                <li>
+                  <button class="bento__tool" type="button" data-tool="ab_test_evaluate">
+                    ab_test_<wbr />evaluate<span class="visually-hidden">, open in the playground</span>
+                  </button>
+                </li>
+                <li>
+                  <button class="bento__tool" type="button" data-tool="ab_test_plan">
+                    ab_test_<wbr />plan<span class="visually-hidden">, open in the playground</span>
+                  </button>
+                </li>
+              </ul>
+            </li>
+
+            <li class="bento__cell bento__cell--email">
+              <h3 class="bento__title">E-mail</h3>
+              <p class="bento__text">
+                Which customers a real e-mail campaign moved, in the Hillstrom experiment with
+                64,000 customers.
+              </p>
+              <figure class="viz viz--email" data-viz="email" data-examples="email_test_analyze">
+                <div class="viz__body" data-viz-body>
+                  <p class="viz__wait">Running the example in your browser.</p>
+                </div>
+                <figcaption class="viz__caption">
+                  email_test_analyze, example "Men's e-mail, overall conversion"
+                </figcaption>
+              </figure>
+              <!-- biome-ignore lint/a11y/noRedundantRoles: Safari drops list semantics when list-style is none -->
+              <ul class="bento__tools" role="list">
+                <li>
+                  <button class="bento__tool" type="button" data-tool="email_test_analyze">
+                    email_test_<wbr />analyze<span class="visually-hidden">, open in the playground</span>
+                  </button>
+                </li>
+              </ul>
+            </li>
+
+            <li class="bento__cell bento__cell--attribution">
+              <h3 class="bento__title">Attribution</h3>
+              <p class="bento__text">
+                Five attribution models side by side, scored on a simulated sample whose true
+                shares are known.
+              </p>
+              <figure class="viz viz--attribution" data-viz="attribution" data-examples="attribution_compare">
+                <div class="viz__body" data-viz-body>
+                  <p class="viz__wait">Running the example in your browser.</p>
+                </div>
+                <figcaption class="viz__caption">
+                  attribution_compare, example "Simulated sample with known truth"
+                </figcaption>
+              </figure>
+              <!-- biome-ignore lint/a11y/noRedundantRoles: Safari drops list semantics when list-style is none -->
+              <ul class="bento__tools" role="list">
+                <li>
+                  <button class="bento__tool" type="button" data-tool="attribution_compare">
+                    attribution_<wbr />compare<span class="visually-hidden">, open in the playground</span>
+                  </button>
+                </li>
+              </ul>
+            </li>
+
+            <li class="bento__cell bento__cell--shop">
+              <h3 class="bento__title">E-commerce</h3>
+              <p class="bento__text">
+                Sales by category, state or month, RFM customer segments and a B2B lead funnel,
+                from Olist's public data.
+              </p>
+              <figure class="viz viz--shop" data-viz="shop" data-examples="store_sales">
+                <div class="viz__body" data-viz-body>
+                  <p class="viz__wait">Running the example in your browser.</p>
+                </div>
+                <figcaption class="viz__caption">
+                  store_sales, example "Top 10 categories by revenue", top 5 shown
+                </figcaption>
+              </figure>
+              <!-- biome-ignore lint/a11y/noRedundantRoles: Safari drops list semantics when list-style is none -->
+              <ul class="bento__tools" role="list">
+                <li>
+                  <button class="bento__tool" type="button" data-tool="store_sales">
+                    store_<wbr />sales<span class="visually-hidden">, open in the playground</span>
+                  </button>
+                </li>
+                <li>
+                  <button class="bento__tool" type="button" data-tool="customer_rfm">
+                    customer_<wbr />rfm<span class="visually-hidden">, open in the playground</span>
+                  </button>
+                </li>
+                <li>
+                  <button class="bento__tool" type="button" data-tool="lead_funnel">
+                    lead_<wbr />funnel<span class="visually-hidden">, open in the playground</span>
+                  </button>
+                </li>
+              </ul>
+            </li>
+
+            <li class="bento__cell bento__cell--budget">
+              <h3 class="bento__title">Budget</h3>
+              <p class="bento__text">
+                What a weekly media budget buys, and the split a marketing mix model expects to
+                sell more.
+              </p>
+              <figure class="viz viz--budget" data-viz="budget" data-examples="budget_simulate budget_optimize">
+                <div class="viz__body" data-viz-body>
+                  <p class="viz__wait">Running the example in your browser.</p>
+                </div>
+                <figcaption class="viz__caption">
+                  budget_simulate, example "Current plan", against budget_optimize, example
+                  "Reallocate the current budget"
+                </figcaption>
+              </figure>
+              <!-- biome-ignore lint/a11y/noRedundantRoles: Safari drops list semantics when list-style is none -->
+              <ul class="bento__tools" role="list">
+                <li>
+                  <button class="bento__tool" type="button" data-tool="budget_simulate">
+                    budget_<wbr />simulate<span class="visually-hidden">, open in the playground</span>
+                  </button>
+                </li>
+                <li>
+                  <button class="bento__tool" type="button" data-tool="budget_optimize">
+                    budget_<wbr />optimize<span class="visually-hidden">, open in the playground</span>
+                  </button>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </section>
+
       <section class="section section--wide" id="playground" aria-labelledby="playground-title">
         <h2 class="display section__title" id="playground-title">Playground</h2>
         <div class="section__body" data-playground>

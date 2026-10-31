@@ -1,12 +1,14 @@
 import "./styles/fonts.css";
 import "./styles/tokens.css";
 import "./styles/base.css";
+import "./styles/bento.css";
 
 import { LIVE_URL, REPO_URL } from "./config";
 import { renderConnect } from "./connect";
 import { setupHow } from "./how";
 import { canAnimate, EASE_OUT, EASE_SPRING, motionAllowed } from "./motion";
 import { runnerUnavailable, setPlaygroundStarter } from "./session";
+import { wireToolLinks } from "./tool-links";
 import { loadTranscript, mountTranscripts, renderHeroItems, TRANSCRIPT_IDS } from "./transcripts";
 import { setupUrlBox } from "./urlbox";
 
@@ -144,3 +146,20 @@ function startPlayground(): void {
 }
 setPlaygroundStarter(startPlayground);
 whenNear(playground, startPlayground);
+
+// The nine tools: each tile draws a small view from its tool's real output when it scrolls into
+// view (that chunk shares the tools with the playground, so the playground starts too). The tool
+// names open the playground.
+const bento = required<HTMLElement>("[data-bento]");
+wireToolLinks(bento, required<HTMLElement>("#playground"));
+whenNear(bento, () => {
+  startPlayground();
+  import("./bento")
+    .then(({ mountBento }) => mountBento(bento))
+    .catch((error: unknown) => {
+      console.error("Could not draw the tool tiles.", error);
+      for (const wait of bento.querySelectorAll(".viz__wait")) {
+        wait.textContent = "The example could not load. Reload the page to try again.";
+      }
+    });
+});

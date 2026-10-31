@@ -1,0 +1,509 @@
+/*
+ * "The nine tools": five tiles, one per area, in an asymmetric grid. Each tile is printed on a
+ * different stock: a screen of ink A, a screen of ink B, paper with a riso halftone, solid ink and
+ * plain ruled paper. Inside, the two inks keep their meaning (A = control / current / truth,
+ * B = variant / plan / model).
+ */
+
+.bento__intro {
+  max-width: 60ch;
+  margin-bottom: 2rem;
+  font-size: var(--step-lead);
+  text-wrap: pretty;
+}
+
+.bento {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.bento__cell {
+  --cell-bg: var(--paper);
+  --cell-fg: var(--ink);
+  --cell-muted: var(--muted);
+  --focus: var(--cell-fg);
+
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 1.25rem 1.25rem 1.125rem;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--cell-bg);
+  color: var(--cell-fg);
+}
+
+.bento__cell--ab {
+  --cell-bg: color-mix(in srgb, var(--ink-a) 11%, var(--paper));
+}
+
+.bento__cell--email {
+  --cell-bg: color-mix(in srgb, var(--ink-b) 14%, var(--paper));
+}
+
+.bento__cell--attribution {
+  box-shadow: inset 0 0 0 1px var(--rule);
+}
+
+/* A riso halftone in ink A, densest in the top corner and fading out before the chart. */
+.bento__cell--attribution::before {
+  content: "";
+  position: absolute;
+  inset: -30% -30% 30% 20%;
+  z-index: -1;
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--ink-a) 45%, transparent) 1.3px,
+    transparent 1.8px
+  );
+  background-size: 7px 7px;
+  rotate: 15deg;
+  mask-image: radial-gradient(ellipse 70% 60% at 85% 20%, #000 15%, transparent 70%);
+  pointer-events: none;
+}
+
+.bento__cell--shop {
+  --cell-bg: var(--ink);
+  --cell-fg: var(--paper);
+  --cell-muted: color-mix(in srgb, var(--paper) 74%, var(--ink));
+}
+
+.bento__cell--budget {
+  box-shadow: inset 0 0 0 var(--rule-width) var(--ink);
+}
+
+.bento__title {
+  font-size: var(--step-lead);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.bento__text {
+  max-width: 46ch;
+  text-wrap: pretty;
+}
+
+.bento__tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding: 0.25rem 0 0;
+  list-style: none;
+}
+
+.bento__tool {
+  min-height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--cell-fg) 40%, transparent);
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: 400 var(--step-data) / 1.35 var(--font-mono);
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  transition-property: border-color, background-color, transform;
+  transition-duration: 160ms;
+  transition-timing-function: var(--ease-out);
+}
+
+.bento__tool:hover {
+  border-color: var(--cell-fg);
+  background: color-mix(in srgb, var(--cell-fg) 7%, transparent);
+}
+
+/* Views ------------------------------------------------------------------------------------------ */
+.viz {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  min-width: 0;
+}
+
+/* Every view has a fixed box, so drawing it never moves the page. */
+.viz__body {
+  position: relative;
+  min-width: 0;
+  height: var(--viz-h, 8rem);
+}
+
+.viz--ab {
+  --viz-h: 13rem;
+}
+
+.viz--email {
+  --viz-h: 7.25rem;
+}
+
+.viz--attribution {
+  --viz-h: 26.5rem;
+}
+
+.viz-attr__ranking {
+  margin-top: 0.5rem;
+}
+
+.viz--shop {
+  --viz-h: 10.5rem;
+}
+
+.viz--budget {
+  --viz-h: 15.5rem;
+}
+
+.viz__wait {
+  color: var(--cell-muted);
+  font: 400 var(--step-data) / 1.5 var(--font-mono);
+}
+
+.viz__caption {
+  color: var(--cell-muted);
+  font: 400 var(--step-data) / 1.45 var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+.viz__visual {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  height: 100%;
+  min-width: 0;
+}
+
+.viz__headline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.625rem;
+}
+
+.viz__num {
+  font: 600 var(--step-section) / 1 var(--font-body);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.viz__label {
+  color: var(--cell-muted);
+  font-size: var(--step-data);
+}
+
+.viz__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4375rem;
+  min-width: 0;
+}
+
+.viz__row {
+  display: grid;
+  grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.625rem;
+  font: 400 var(--step-data) / 1.3 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.viz__row--stacked {
+  grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr);
+}
+
+.viz__row-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.viz__row-value {
+  white-space: nowrap;
+}
+
+/* Bars have no track: the length is the message. */
+.viz__bar {
+  display: block;
+  width: calc(var(--scale, 1) * 100%);
+  height: 0.625rem;
+  border-radius: 1px;
+  background: var(--ink-a);
+  transform-origin: left center;
+}
+
+.viz__bar--b {
+  background: var(--ink-b);
+}
+
+/* Two bars on one line overprint: ink A and ink B multiply where they overlap. */
+.viz__track {
+  display: grid;
+  isolation: isolate;
+}
+
+.viz__track .viz__bar {
+  grid-area: 1 / 1;
+  mix-blend-mode: var(--overprint);
+}
+
+.viz__keys,
+.viz-ab__keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.875rem;
+  color: var(--cell-muted);
+  font: 400 var(--step-data) / 1.4 var(--font-mono);
+}
+
+.viz__key,
+.viz-ab__key {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  white-space: nowrap;
+}
+
+.viz__swatch {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 1px;
+  background: var(--ink-a);
+}
+
+:is(.viz__key--b, .viz-ab__key--b) .viz__swatch {
+  background: var(--ink-b);
+}
+
+/* A/B: the two bell curves */
+.viz-ab__plot {
+  width: 100%;
+  height: 6.5rem;
+  overflow: visible;
+  isolation: isolate;
+}
+
+.viz-ab__area {
+  mix-blend-mode: var(--overprint);
+}
+
+.viz-ab__area--a {
+  fill: var(--ink-a);
+}
+
+.viz-ab__area--b {
+  fill: var(--ink-b);
+}
+
+.viz-ab__base {
+  stroke: var(--cell-fg);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.viz-ab__key {
+  color: var(--cell-fg);
+}
+
+/* With room, each key sits under the peak of its own curve. */
+@media (min-width: 640px) {
+  .viz-ab__keys {
+    position: relative;
+    height: 1.5rem;
+  }
+
+  .viz-ab__key {
+    position: absolute;
+    top: 0;
+    left: calc(var(--at) * 100%);
+    translate: -50% 0;
+  }
+}
+
+/* Narrow strips have no room for channel names; the legend under them has every one. */
+@media (max-width: 639px) {
+  .viz-budget__seg {
+    color: transparent;
+  }
+}
+
+/* Budget: the same total, split two ways */
+.viz-budget__strips {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.viz-budget__strip {
+  display: grid;
+  grid-template-columns: 5.25rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.625rem;
+  font: 400 var(--step-data) / 1.3 var(--font-mono);
+}
+
+.viz-budget__side {
+  color: var(--cell-muted);
+}
+
+.viz-budget__bar {
+  display: flex;
+  gap: 2px;
+  height: 1.625rem;
+  min-width: 0;
+}
+
+.viz-budget__seg {
+  display: flex;
+  align-items: center;
+  flex-basis: 0;
+  min-width: 0;
+  padding-inline: 0.375rem;
+  overflow: hidden;
+  border-radius: 1px;
+  background: var(--ink-a);
+  color: var(--on-ink-a);
+  white-space: nowrap;
+  transform-origin: left center;
+}
+
+.viz-budget__seg--b {
+  background: var(--ink-b);
+  color: var(--on-ink-b);
+}
+
+.viz-budget__legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.75rem), 1fr));
+  gap: 0.25rem 0.75rem;
+  margin: 0;
+  font: 400 var(--step-data) / 1.4 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.viz-budget__item {
+  display: flex;
+  gap: 0.375rem;
+  white-space: nowrap;
+}
+
+.viz-budget__legend dt {
+  color: var(--cell-muted);
+}
+
+.viz-budget__legend dd {
+  margin: 0;
+}
+
+/* Entrance (only when motion is allowed; the static view is already complete) -------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  .viz[data-enter] [data-grow] {
+    animation: viz-grow 560ms var(--ease-out) both;
+    animation-delay: calc(var(--i, 0) * 70ms + 60ms);
+  }
+
+  .viz[data-enter] [data-rise] {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation: viz-rise 760ms var(--ease-out) both;
+    animation-delay: calc(var(--i, 0) * 160ms);
+  }
+
+  .viz[data-enter] :is(.viz-ab__keys, .viz__keys, .viz-budget__legend, .viz__row-value) {
+    animation: viz-fade 420ms 260ms ease-out both;
+  }
+}
+
+@keyframes viz-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes viz-rise {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes viz-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Picking a tool: its name flies to the playground's tool list (tool-links.ts). */
+::view-transition-group(picked-tool) {
+  animation-duration: 560ms;
+  animation-timing-function: var(--ease-out);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 260ms;
+}
+
+/* Layout ------------------------------------------------------------------------------------------ */
+@media (min-width: 720px) {
+  .bento {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "ab ab"
+      "email attribution"
+      "shop attribution"
+      "budget budget";
+  }
+
+  .bento__cell {
+    padding: 1.5rem 1.5rem 1.25rem;
+  }
+
+  .bento__cell--ab {
+    grid-area: ab;
+  }
+
+  .bento__cell--email {
+    grid-area: email;
+  }
+
+  .bento__cell--attribution {
+    grid-area: attribution;
+  }
+
+  .bento__cell--shop {
+    grid-area: shop;
+  }
+
+  .bento__cell--budget {
+    grid-area: budget;
+  }
+
+  .viz--shop .viz__row {
+    grid-template-columns: minmax(0, 12.5rem) minmax(0, 1fr) auto;
+  }
+}
+
+@media (min-width: 1024px) {
+  .bento {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-areas:
+      "ab ab ab ab email email"
+      "attribution attribution budget budget budget budget"
+      "attribution attribution shop shop shop shop";
+  }
+
+  .viz--budget {
+    --viz-h: 9.75rem;
+  }
+
+  .viz--ab {
+    --viz-h: 15rem;
+  }
+
+  .viz--ab .viz-ab__plot {
+    height: 8.5rem;
+  }
+}

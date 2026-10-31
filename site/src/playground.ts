@@ -23,6 +23,7 @@ import {
   type Session,
   type Traffic,
 } from "./mcp";
+import { onPickTool } from "./picker";
 import { renderResult } from "./render";
 import { provideRunner, RUN_LABELS, setSharedMode } from "./session";
 import { renderTicket, setTicketRunLabel } from "./ticket";
@@ -667,4 +668,10 @@ export async function mountPlayground(
   const first = tools[0];
   if (first) selectTool(first.name);
   provideRunner(runShared, state.mode);
+  // The tiles in "The nine tools" open a tool here.
+  onPickTool((name) => {
+    if (!tools.some((t) => t.name === name)) return undefined;
+    selectTool(name);
+    return toolList.querySelector<HTMLElement>(`.pg__tool[data-tool="${name}"]`) ?? undefined;
+  });
 }

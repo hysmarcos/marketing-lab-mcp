@@ -7,6 +7,7 @@ import {
   mountPlayground,
   RUN_LABELS,
 } from "../../site/src/playground";
+import { pickTool, resetPicker } from "../../site/src/picker";
 import { sharedRunner } from "../../site/src/session";
 import worker from "../../src/runtimes/worker";
 
@@ -327,5 +328,17 @@ describe("playground", () => {
     // Same alert element, emptied by the new run: it stays in the DOM for the next announcement.
     expect(q(root, ".pg__notice")).toBe(notice);
     expect(notice.textContent).toBe("");
+  });
+});
+
+describe("picking a tool from elsewhere on the page", () => {
+  it("selects the tool and hands back its button in the list", async () => {
+    resetPicker();
+    const root = await mount();
+    const picked = await pickTool("lead_funnel");
+    expect(picked).toBe(toolButton(root, "lead_funnel"));
+    expect(picked?.getAttribute("aria-pressed")).toBe("true");
+    expect(q(root, ".pg__form-name").textContent).toBe("lead_funnel");
+    expect(await pickTool("not_a_tool")).toBeUndefined();
   });
 });

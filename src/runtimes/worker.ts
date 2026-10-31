@@ -7,7 +7,7 @@ const ALLOWED_ORIGINS: ReadonlySet<string> = new Set([
 ]);
 
 const ROOT_TEXT =
-  "marketing-lab-mcp — MCP endpoint at /mcp. Demo and docs: https://hysmarcos.github.io/marketing-lab-mcp/";
+  "marketing-lab-mcp: MCP endpoint at /mcp. Demo and docs: https://hysmarcos.github.io/marketing-lab-mcp/";
 
 /** Response headers a browser client has to be able to read (legacy session id, protocol version). */
 const EXPOSED_HEADERS = "mcp-protocol-version, mcp-session-id";

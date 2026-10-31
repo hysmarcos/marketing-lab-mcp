@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { COPIED_LABEL, wireCopyButton } from "../../site/src/copy";
 import { revealOnScroll } from "../../site/src/reveal";
 import { attachTabInk } from "../../site/src/tab-ink";
+import { renderTicket, setTicketStamp } from "../../site/src/ticket";
+import { settleReveals } from "../../site/src/tool-links";
 
 afterEach(() => {
   document.body.replaceChildren();
@@ -101,5 +103,38 @@ describe("the copy button morph", () => {
     vi.advanceTimersByTime(2000);
     expect(button.textContent).toBe("Copy URL");
     expect(button.hasAttribute("data-copied")).toBe(false);
+  });
+});
+
+describe("settleReveals", () => {
+  it("shows at once whatever in the target still waits for its reveal", () => {
+    const target = document.createElement("section");
+    target.dataset.reveal = "pending";
+    const inner = document.createElement("div");
+    inner.dataset.reveal = "pending";
+    const done = document.createElement("div");
+    done.dataset.reveal = "shown";
+    target.append(inner, done);
+    settleReveals(target);
+    expect(target.dataset.reveal).toBeUndefined();
+    expect(inner.dataset.reveal).toBeUndefined();
+    expect(done.dataset.reveal).toBe("shown");
+  });
+});
+
+describe("stamps", () => {
+  it("play their landing once: the class goes when the ink has spread", () => {
+    const ticket = renderTicket({ tool: "ab_test_plan", input: {} });
+    setTicketStamp(ticket, { kind: "match" });
+    const stamp = ticket.querySelector<HTMLElement>(".stamp");
+    expect(stamp?.classList.contains("stamp--fresh")).toBe(true);
+    const thunk = new Event("animationend");
+    Object.assign(thunk, { animationName: "stamp-thunk" });
+    stamp?.dispatchEvent(thunk);
+    expect(stamp?.classList.contains("stamp--fresh")).toBe(true);
+    const spread = new Event("animationend");
+    Object.assign(spread, { animationName: "ink-spread" });
+    stamp?.dispatchEvent(spread);
+    expect(stamp?.classList.contains("stamp--fresh")).toBe(false);
   });
 });

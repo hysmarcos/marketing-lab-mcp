@@ -14,6 +14,15 @@ export const EASE_SPRING =
   "1.021 58.3%, 1.031 62.5%, 1.037 66.7%, 1.038 70.8%, 1.037 75%, 1.034 79.2%, 1.03 83.3%, " +
   "1.026 87.5%, 1.021 91.7%, 1.017 95.8%, 1)";
 
+/**
+ * Delays for a staggered list: `step` ms apart, squeezed so the last one starts by `cap` ms (a
+ * long list must not keep animating long after the first items have settled).
+ */
+export function staggerDelays(count: number, step: number, cap: number): number[] {
+  const gap = count > 1 ? Math.min(step, cap / (count - 1)) : 0;
+  return Array.from({ length: count }, (_, i) => Math.round(i * gap));
+}
+
 /** False when the visitor asked for reduced motion (or the page cannot tell, e.g. in tests). */
 export function motionAllowed(win: Window = window): boolean {
   if (typeof win.matchMedia !== "function") return false;

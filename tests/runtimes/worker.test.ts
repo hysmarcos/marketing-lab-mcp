@@ -66,6 +66,7 @@ describe("worker", () => {
     expect(res.headers.get("content-type")).toContain("text/plain");
     const text = await res.text();
     expect(text).toContain("MCP endpoint at /mcp");
+    expect(text).not.toMatch(/[\u2013\u2014]/);
     expect(text).toContain("https://hysmarcos.github.io/marketing-lab-mcp/");
   });
 

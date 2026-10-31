@@ -248,12 +248,12 @@
 /* A stamp lands like a rubber stamp: it comes down a little large and askew, hits the paper (a
    short squash) and the ink spreads to full strength. Only stamps that appear after a run move. */
 @media (prefers-reduced-motion: no-preference) {
-  .stamp {
+  .stamp--fresh {
     animation: stamp-thunk 300ms both;
   }
 
-  .stamp__ink {
-    animation: ink-spread 420ms 120ms ease-out both;
+  .stamp--fresh .stamp__ink {
+    animation: ink-spread 380ms 100ms ease-out both;
   }
 }
 
@@ -285,10 +285,9 @@
   }
 }
 
-/* Narrow tickets tear along the bottom instead of the right ---------------------------------- */
-/* Below 31rem the stub would leave the inputs too little room (numbers broke across lines), so
-   the ticket tears along the bottom and the name steps down to body size. */
-@container (max-width: 31rem) {
+/* Narrow tickets tear along the bottom instead of the right, and the name steps down to body
+   size. */
+@container (max-width: 27rem) {
   .ticket__tool {
     font-size: var(--step-body);
   }
@@ -335,6 +334,59 @@
   }
 
   .ticket__stamp-slot:not(:empty) {
+    margin: 1rem -0.25rem calc(var(--stamp-overlap) * -0.6) 0;
+  }
+}
+
+/* In the playground's output column the stub left the inputs too little room below 31rem
+   (numbers broke digit by digit), so there it tears along the bottom sooner. */
+@container (max-width: 31rem) {
+  .pg__ticket .ticket__tool {
+    font-size: var(--step-body);
+  }
+
+  .pg__ticket .ticket__sheet {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pg__ticket .ticket__body {
+    padding-right: 1.25rem;
+    border-radius: 6px 6px 0 0;
+  }
+
+  .pg__ticket .ticket__stub {
+    border-radius: 0 0 6px 6px;
+    align-items: flex-start;
+    padding: 1.125rem 1.25rem 1rem;
+    text-align: left;
+  }
+
+  .pg__ticket .ticket__stub::before {
+    inset: calc(var(--hole) * -1.75) 0 auto 0;
+    width: auto;
+    height: calc(var(--hole) * 3.5);
+    background-size: var(--hole-pitch) 100%;
+    background-repeat: repeat-x;
+  }
+
+  .pg__ticket .ticket__stub::after {
+    inset: calc(var(--notch) * -1) 0 auto 0;
+    width: auto;
+    height: calc(var(--notch) * 2);
+    background:
+      radial-gradient(
+        circle at 0 50%,
+        var(--ticket-ground) var(--notch),
+        transparent calc(var(--notch) + 0.5px)
+      ),
+      radial-gradient(
+        circle at 100% 50%,
+        var(--ticket-ground) var(--notch),
+        transparent calc(var(--notch) + 0.5px)
+      );
+  }
+
+  .pg__ticket .ticket__stamp-slot:not(:empty) {
     margin: 1rem -0.25rem calc(var(--stamp-overlap) * -0.6) 0;
   }
 }

@@ -109,7 +109,7 @@
   text-align: left;
   overflow-wrap: anywhere;
   cursor: pointer;
-  transition-property: border-color, background-color, transform;
+  transition-property: border-color, background-color, scale;
   transition-duration: 160ms;
   transition-timing-function: var(--ease-out);
 }
@@ -323,13 +323,6 @@
   }
 }
 
-/* Narrow strips have no room for channel names; the legend under them has every one. */
-@media (max-width: 639px) {
-  .viz-budget__seg {
-    color: transparent;
-  }
-}
-
 /* Budget: the same total, split two ways */
 .viz-budget__strips {
   display: flex;
@@ -375,6 +368,14 @@
   color: var(--on-ink-b);
 }
 
+/* Narrow strips have no room for channel names; the legend under them has every one. */
+@media (max-width: 639px) {
+  .viz-budget__seg,
+  .viz-budget__seg--b {
+    color: transparent;
+  }
+}
+
 .viz-budget__legend {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.75rem), 1fr));
@@ -400,16 +401,17 @@
 
 /* Entrance (only when motion is allowed; the static view is already complete) -------------------- */
 @media (prefers-reduced-motion: no-preference) {
+  /* Delays come from bento.ts (capped), so the last bar settles by about 700 ms. */
   .viz[data-enter] [data-grow] {
-    animation: viz-grow 560ms var(--ease-out) both;
-    animation-delay: calc(var(--i, 0) * 70ms + 60ms);
+    animation: viz-grow 440ms var(--ease-out) both;
+    animation-delay: var(--delay, 0ms);
   }
 
   .viz[data-enter] [data-rise] {
     transform-box: fill-box;
     transform-origin: 50% 100%;
-    animation: viz-rise 760ms var(--ease-out) both;
-    animation-delay: calc(var(--i, 0) * 160ms);
+    animation: viz-rise 480ms var(--ease-out) both;
+    animation-delay: var(--delay, 0ms);
   }
 
   .viz[data-enter] :is(.viz-ab__keys, .viz__keys, .viz-budget__legend, .viz__row-value) {

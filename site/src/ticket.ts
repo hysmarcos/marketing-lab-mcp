@@ -132,7 +132,15 @@ export function setTicketStamp(ticket: HTMLElement, stamp: TicketStamp | undefin
     console.error(`Unknown stamp kind ${JSON.stringify(stamp.kind)}; showing no stamp.`);
     valid = undefined;
   }
-  slot.replaceChildren(...(valid ? [renderStamp(valid)] : []));
+  const printed = valid ? renderStamp(valid) : undefined;
+  if (printed) {
+    // The thunk plays when the stamp is applied, not again when a hidden panel is shown.
+    printed.classList.add("stamp--fresh");
+    printed.addEventListener("animationend", (event) => {
+      if (event.animationName === "ink-spread") printed.classList.remove("stamp--fresh");
+    });
+  }
+  slot.replaceChildren(...(printed ? [printed] : []));
   if (valid) ticket.dataset.stamped = valid.kind;
   else delete ticket.dataset.stamped;
 }

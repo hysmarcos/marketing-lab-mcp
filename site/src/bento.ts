@@ -12,7 +12,7 @@ import {
   storeView,
 } from "./bento-data";
 import { countUp } from "./countup";
-import { motionAllowed } from "./motion";
+import { motionAllowed, staggerDelays } from "./motion";
 import { breakAtUnderscores } from "./wbr";
 
 /**
@@ -349,6 +349,15 @@ export function fillFigure(figure: HTMLElement, animate = motionAllowed()): void
     return;
   }
   if (!animate) return;
+  // Bars grow in reading order, the last one starting by 240 ms; the curves 140 ms apart.
+  const bars = [...figure.querySelectorAll<HTMLElement>("[data-grow]")];
+  staggerDelays(bars.length, 70, 240).forEach((delay, i) => {
+    bars[i]?.style.setProperty("--delay", `${delay}ms`);
+  });
+  const curves = [...figure.querySelectorAll<SVGElement>("[data-rise]")];
+  staggerDelays(curves.length, 140, 140).forEach((delay, i) => {
+    curves[i]?.style.setProperty("--delay", `${delay}ms`);
+  });
   figure.dataset.enter = "";
   for (const num of figure.querySelectorAll<HTMLElement>(".viz__num")) countUp(num);
 }

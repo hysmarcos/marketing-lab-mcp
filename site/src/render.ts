@@ -118,7 +118,7 @@ export function labelOf(key: string, ctx: Context): string {
 }
 
 function formatValue(value: unknown, key: string, ctx: Context): string {
-  if (value === null || value === undefined) return "—";
+  if (value === null || value === undefined) return "n/a";
   if (typeof value === "number") return formatNumber(value, key, ctx);
   if (typeof value === "boolean") return value ? "Yes" : "No";
   if (typeof value === "string") return value;

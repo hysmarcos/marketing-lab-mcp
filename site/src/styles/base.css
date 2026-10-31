@@ -238,6 +238,13 @@ code {
   }
 }
 
+@media print {
+  [data-reveal="pending"] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* Masthead ------------------------------------------------------------------------------------ */
 .masthead {
   border-bottom: 1px solid var(--rule);
@@ -310,9 +317,14 @@ code {
   display: block;
 }
 
-/* The ink A and ink B plates of the opening print. They sit exactly over the key text (same box,
-   same wrap) and are invisible unless the entrance runs. */
-.hero__plate {
+/* The ink A and ink B plates of the opening print: copies of data-text that sit exactly over the
+   key text (same box, same wrap) and are invisible unless the entrance runs. The empty alt text
+   keeps them out of the accessible name. */
+.hero__title::before,
+.hero__title::after {
+  content: attr(data-text);
+  /* biome-ignore lint/suspicious/noDuplicateProperties: the first line is the fallback for browsers without alt text in content */
+  content: attr(data-text) / "";
   position: absolute;
   inset: 0;
   opacity: 0;
@@ -321,11 +333,11 @@ code {
   user-select: none;
 }
 
-.hero__plate--a {
+.hero__title::before {
   color: var(--ink-a);
 }
 
-.hero__plate--b {
+.hero__title::after {
   color: var(--ink-b);
 }
 
@@ -634,16 +646,17 @@ code {
  * text is simply there.
  */
 @media (prefers-reduced-motion: no-preference) {
-  .hero__plate--a {
-    animation: plate-a 820ms var(--ease-out) both;
+  .hero__title::before {
+    animation: plate-a 640ms var(--ease-out) both;
   }
 
-  .hero__plate--b {
-    animation: plate-b 820ms var(--ease-out) both;
+  .hero__title::after {
+    animation: plate-b 640ms var(--ease-out) both;
   }
 
+  /* The key plate is fully printed by 300 ms: it is the page's largest paint. */
   .hero__title-key {
-    animation: key-print 240ms 520ms ease-out both;
+    animation: key-print 140ms 160ms ease-out both;
   }
 
   .hero__lead,
@@ -653,15 +666,15 @@ code {
   }
 
   .hero__lead {
-    animation-delay: 260ms;
+    animation-delay: 180ms;
   }
 
   .urlbox {
-    animation-delay: 360ms;
+    animation-delay: 260ms;
   }
 
   .hero__caption {
-    animation-delay: 460ms;
+    animation-delay: 320ms;
   }
 }
 
@@ -670,10 +683,10 @@ code {
     opacity: 0;
     transform: translate(-9px, -5px);
   }
-  12% {
+  10% {
     opacity: 1;
   }
-  70% {
+  45% {
     opacity: 1;
     transform: none;
   }
@@ -688,10 +701,10 @@ code {
     opacity: 0;
     transform: translate(8px, 6px);
   }
-  12% {
+  10% {
     opacity: 1;
   }
-  70% {
+  45% {
     opacity: 1;
     transform: none;
   }

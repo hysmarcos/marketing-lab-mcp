@@ -41,13 +41,17 @@ revealOnScroll([
 // a spring, and each tool ticket feeds out like a printed receipt. With reduced motion everything
 // shows at once.
 const chat = required<HTMLOListElement>("[data-hero-chat]");
-const HERO_START_MS = 640;
+const HERO_START_MS = 400;
 const HERO_STEP_MS = 420;
 
 function reveal(items: HTMLElement[]): void {
   if (!motionAllowed() || !items[0] || !canAnimate(items[0])) return;
+  // Timed from page start, not from when the conversation arrived: on a slow network the first
+  // message shows as soon as it is here instead of waiting another 400 ms.
+  const now = Number(document.timeline?.currentTime ?? performance.now());
+  const base = Math.max(0, HERO_START_MS - now);
   items.forEach((item, i) => {
-    const delay = HERO_START_MS + HERO_STEP_MS * i;
+    const delay = base + HERO_STEP_MS * i;
     const ticket = item.querySelector<HTMLElement>(".ticket");
     if (ticket) {
       feedReceipt(item, ticket, delay);

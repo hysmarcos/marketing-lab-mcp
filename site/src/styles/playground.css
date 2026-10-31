@@ -145,7 +145,8 @@
 }
 
 .pg__tool {
-  transition-property: border-color, box-shadow, padding, scale;
+  position: relative;
+  transition-property: border-color, scale;
   transition-duration: 160ms;
   transition-timing-function: var(--ease-out);
   display: flex;
@@ -166,10 +167,31 @@
   border-color: var(--ink);
 }
 
+/* The selected tool gets an ink bar along its left edge; it grows in (a transform), nothing
+   around it moves. */
+.pg__tool::before {
+  content: "";
+  position: absolute;
+  inset: -1px auto -1px -1px;
+  width: 5px;
+  border-radius: 4px 0 0 4px;
+  background: var(--ink);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
 .pg__tool[aria-pressed="true"] {
   border-color: var(--ink);
-  box-shadow: inset 4px 0 0 var(--ink);
-  padding-left: 1rem;
+}
+
+.pg__tool[aria-pressed="true"]::before {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pg__tool::before {
+    transition: transform 200ms var(--ease-out);
+  }
 }
 
 .pg__tool-title {
@@ -850,8 +872,8 @@ select.field__control {
   .result[data-enter] .bars__bar {
     transform-box: fill-box;
     transform-origin: left center;
-    animation: viz-grow 480ms var(--ease-out) both;
-    animation-delay: calc(var(--i, 0) * 60ms);
+    animation: viz-grow 440ms var(--ease-out) both;
+    animation-delay: var(--delay, 0ms);
   }
 
   .pg__log > .is-new {

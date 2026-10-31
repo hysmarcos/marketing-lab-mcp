@@ -283,7 +283,7 @@ describe("playground", () => {
     );
     const markers = [...root.querySelectorAll(".msg-marker")].map((m) => m.textContent);
     expect(markers).toEqual([LOG_MARKERS.browser, LOG_MARKERS.live]);
-    expect(markers[1]).toBe("— connected to the live server —");
+    expect(markers[1]).toBe("Connected to the live server");
   });
 
   it("rebuilds the tool list from the live server and keeps what was typed", async () => {

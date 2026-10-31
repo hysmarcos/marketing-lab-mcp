@@ -24,7 +24,7 @@ import {
   type Session,
   type Traffic,
 } from "./mcp";
-import { motionAllowed } from "./motion";
+import { motionAllowed, staggerDelays } from "./motion";
 import { onPickTool } from "./picker";
 import { renderResult } from "./render";
 import { provideRunner, RUN_LABELS, setSharedMode } from "./session";
@@ -48,8 +48,8 @@ export const MAX_LOG = 200;
 
 /** Lines in the message log where the transport changes. */
 export const LOG_MARKERS: Record<Mode, string> = {
-  browser: "— switched to your browser —",
-  live: "— connected to the live server —",
+  browser: "Switched to your browser",
+  live: "Connected to the live server",
 };
 
 function modeName(mode: Mode): string {
@@ -335,7 +335,10 @@ export async function mountPlayground(
     const item = el("li", `msg msg--${message.direction}`);
     // New lines slide in from their side (out from the client, in from the server) when the log
     // is on screen.
-    if (!messagesPanel.hidden && motionAllowed()) item.classList.add("is-new");
+    if (!messagesPanel.hidden && motionAllowed()) {
+      item.classList.add("is-new");
+      item.addEventListener("animationend", () => item.classList.remove("is-new"), { once: true });
+    }
     const details = el("details", "msg__details");
     const summary = el("summary", "msg__summary");
     summary.append(el("span", "msg__dir", message.direction), el("span", "msg__what", what));
@@ -509,11 +512,17 @@ export async function mountPlayground(
     // The comparison bars grow from zero and their numbers count up, so the new answer reads as
     // new. With reduced motion they are simply there.
     if (motionAllowed()) {
-      view.dataset.enter = "";
-      view.querySelectorAll<HTMLElement>(".bars__row").forEach((row, i) => {
-        row.style.setProperty("--i", String(i));
+      const rows = [...view.querySelectorAll<HTMLElement>(".bars__row")];
+      staggerDelays(rows.length, 60, 240).forEach((delay, i) => {
+        rows[i]?.style.setProperty("--delay", `${delay}ms`);
       });
+      view.dataset.enter = "";
       for (const value of view.querySelectorAll<HTMLElement>(".bars__value")) countUp(value);
+      // Once played, the entrance is gone, so it does not replay when the Result tab is shown
+      // again (a hidden panel restarts its CSS animations).
+      setTimeout(() => {
+        delete view.dataset.enter;
+      }, 1000);
     }
     // The summary is printed under the ticket; screen readers also hear it with the status.
     status.replaceChildren(

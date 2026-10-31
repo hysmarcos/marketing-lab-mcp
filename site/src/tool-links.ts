@@ -15,9 +15,18 @@ type TransitionDocument = Document & {
   startViewTransition?: (update: () => Promise<void> | void) => { finished: Promise<void> };
 };
 
+/** Shows at once anything in `target` still waiting for its scroll reveal (reveal.ts). */
+export function settleReveals(target: HTMLElement): void {
+  for (const node of [target, ...target.querySelectorAll<HTMLElement>("[data-reveal]")]) {
+    if (node.dataset.reveal === "pending") delete node.dataset.reveal;
+  }
+}
+
 async function openTool(button: HTMLElement, name: string, target: HTMLElement): Promise<void> {
   const doc = document as TransitionDocument;
   const motion = motionAllowed();
+  // The page lands on the playground directly, so it must not arrive half-faded.
+  settleReveals(target);
 
   // The shared-element flight only works when the playground can answer at once; a transition
   // that waits for a download would freeze the page meanwhile.

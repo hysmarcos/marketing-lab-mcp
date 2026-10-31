@@ -3,6 +3,7 @@ import data from "../../data/hillstrom_cells.json";
 import { analyzeEmailTest, type EmailCell, type EmailData } from "../../src/core/email";
 import { ToolInputError } from "../../src/server/tool";
 import reference from "../fixtures/email_reference.json";
+import { expectCloseTail } from "./closeTo";
 
 const hillstrom = data as EmailData;
 
@@ -20,7 +21,7 @@ describe("analyzeEmailTest parity with statsmodels and scipy", () => {
       if (!row) return;
       expect(row.n_control).toBe(c.n_control);
       expect(row.n_treatment).toBe(c.n_treatment);
-      expect(Math.abs(row.p_value - c.p_value)).toBeLessThan(1e-6);
+      expectCloseTail(row.p_value, c.p_value);
       expect(row.control_value).toBeCloseTo(c.control_value, 9);
       expect(row.treatment_value).toBeCloseTo(c.treatment_value, 9);
       expect(row.absolute_uplift).toBeCloseTo(c.absolute_uplift, 9);

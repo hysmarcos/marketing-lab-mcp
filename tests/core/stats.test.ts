@@ -8,13 +8,14 @@ import {
   welchTTest,
 } from "../../src/core/stats";
 import reference from "../fixtures/abtest_reference.json";
+import { expectCloseTail } from "./closeTo";
 
 const TOL = 1e-6;
 
 describe("normalCdf", () => {
   for (const { z, value } of reference.normal_cdf) {
     it(`matches scipy at z=${z}`, () => {
-      expect(Math.abs(normalCdf(z) - value)).toBeLessThan(TOL);
+      expectCloseTail(normalCdf(z), value, TOL);
     });
   }
   it("keeps relative accuracy in the far tail", () => {
@@ -43,7 +44,7 @@ describe("normalPpf", () => {
 describe("chiSquare1Sf", () => {
   for (const { x, value } of reference.chi2_1_sf) {
     it(`matches scipy at x=${x}`, () => {
-      expect(Math.abs(chiSquare1Sf(x) - value)).toBeLessThan(TOL);
+      expectCloseTail(chiSquare1Sf(x), value, TOL);
     });
   }
   it("is 1 for x <= 0", () => {
@@ -54,7 +55,7 @@ describe("chiSquare1Sf", () => {
 describe("regularizedIncompleteBeta", () => {
   for (const { x, a, b, value } of reference.betainc) {
     it(`matches scipy.special.betainc(${a}, ${b}, ${x})`, () => {
-      expect(Math.abs(regularizedIncompleteBeta(x, a, b) - value)).toBeLessThan(TOL);
+      expectCloseTail(regularizedIncompleteBeta(x, a, b), value, TOL);
     });
   }
   it("handles the endpoints", () => {
@@ -70,13 +71,13 @@ describe("regularizedIncompleteBeta", () => {
 describe("studentTSf", () => {
   for (const { t, df, value } of reference.student_t_sf) {
     it(`matches scipy at t=${t}, df=${df}`, () => {
-      expect(Math.abs(studentTSf(t, df) - value)).toBeLessThan(TOL);
+      expectCloseTail(studentTSf(t, df), value, TOL);
     });
   }
   it("reproduces the Welch p-values from scipy", () => {
     for (const c of reference.welch) {
       const p = 2 * studentTSf(Math.abs(c.t), c.df);
-      expect(Math.abs(p - c.p_value)).toBeLessThan(TOL);
+      expectCloseTail(p, c.p_value, TOL);
     }
   });
 });
@@ -87,7 +88,7 @@ describe("welchTTest", () => {
       const r = welchTTest(c.mean1, c.std1 ** 2, c.n1, c.mean2, c.std2 ** 2, c.n2);
       expect(r.t).toBeCloseTo(c.t, 9);
       expect(r.df).toBeCloseTo(c.df, 6);
-      expect(Math.abs(r.pValue - c.p_value)).toBeLessThan(TOL);
+      expectCloseTail(r.pValue, c.p_value, TOL);
       expect(r.degenerate).toBe(false);
     }
   });

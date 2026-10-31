@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { evaluateAbTest, planAbTest } from "../../src/core/abtest";
 import { ToolInputError } from "../../src/server/tool";
 import reference from "../fixtures/abtest_reference.json";
+import { expectCloseTail } from "./closeTo";
 
 describe("evaluateAbTest", () => {
   it("evaluates a clear win", () => {
@@ -110,11 +111,11 @@ describe("evaluateAbTest", () => {
           confidence: c.confidence,
           expected_split: c.expected_split,
         });
-        expect(Math.abs(r.p_value - c.p_value)).toBeLessThan(1e-6);
+        expectCloseTail(r.p_value, c.p_value);
         expect(Math.abs(r.absolute_diff - c.absolute_diff)).toBeLessThan(1e-9);
         expect(Math.abs(r.ci_low - c.ci_low)).toBeLessThan(1e-6);
         expect(Math.abs(r.ci_high - c.ci_high)).toBeLessThan(1e-6);
-        expect(Math.abs(r.srm_p_value - c.srm_p_value)).toBeLessThan(1e-6);
+        expectCloseTail(r.srm_p_value, c.srm_p_value);
         expect(Math.abs(r.prob_variant_better - c.prob_variant_better_normal)).toBeLessThan(1e-6);
         // The normal approximation tracks the exact posterior probability closely
         // once each arm has enough conversions; with zero conversions it is rougher.

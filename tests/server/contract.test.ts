@@ -1,5 +1,6 @@
 import type { Client } from "@modelcontextprotocol/client";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { MAX_SUMMARY_LENGTH } from "../../src/server/tool";
 import { TOOLS } from "../../src/server/tools";
 import { connectInMemory } from "./helpers";
 
@@ -39,6 +40,8 @@ describe("tool contract", () => {
         arguments: { ...example?.args, definitely_not_a_field: 1 },
       });
       expect(result.isError).toBe(true);
+      const content = result.content as { type: string; text: string }[];
+      expect(content[0]?.text).toContain("definitely_not_a_field");
     },
   );
 
@@ -56,7 +59,7 @@ describe("tool contract", () => {
           const content = result.content as { type: string; text: string }[];
           expect(content[0]?.type).toBe("text");
           expect(content[0]?.text.length).toBeGreaterThan(0);
-          expect(content[0]?.text.length).toBeLessThanOrEqual(1200);
+          expect(content[0]?.text.length).toBeLessThanOrEqual(MAX_SUMMARY_LENGTH);
           const structured = result.structuredContent as Record<string, unknown>;
           expect(Array.isArray(structured.warnings)).toBe(true);
           expect(typeof structured.source).toBe("string");
@@ -91,11 +94,9 @@ describe("errors", () => {
   });
 
   it("does not crash on an unknown tool name", async () => {
-    const outcome = await client
-      .callTool({ name: "no_such_tool", arguments: {} })
-      .then((r) => ({ isError: r.isError === true, thrown: false }))
-      .catch(() => ({ isError: false, thrown: true }));
-    expect(outcome.isError || outcome.thrown).toBe(true);
+    await expect(client.callTool({ name: "no_such_tool", arguments: {} })).rejects.toThrow(
+      /not found/,
+    );
     // The server must still answer afterwards.
     const { tools } = await client.listTools();
     expect(tools.length).toBeGreaterThan(0);

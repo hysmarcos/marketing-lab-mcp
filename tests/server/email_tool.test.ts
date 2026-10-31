@@ -37,7 +37,14 @@ describe("email_test_analyze", () => {
     });
     const rows = (zip.structuredContent as { rows: { segment: string }[] }).rows;
     expect(rows.map((r) => r.segment)).toEqual(["Rural", "Suburban", "Urban"]);
-    for (const segment_by of ["history_segment", "zip_code", "channel", "newbie", "mens"]) {
+    for (const segment_by of [
+      "history_segment",
+      "zip_code",
+      "channel",
+      "newbie",
+      "mens",
+      "womens",
+    ]) {
       for (const metric of ["visit", "conversion", "spend"]) {
         const r = await client.callTool({
           name: "email_test_analyze",

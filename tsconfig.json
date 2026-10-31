@@ -12,5 +12,5 @@
     "noEmit": true,
     "types": []
   },
-  "include": ["src", "tests", "site/src", "vitest.config.ts", "vite.config.ts"]
+  "include": ["src", "tests", "site/src", "scripts", "vitest.config.ts", "vite.config.ts"]
 }

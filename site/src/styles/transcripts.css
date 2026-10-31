@@ -1,0 +1,220 @@
+/*
+ * Recorded conversations: the user's message in a grey bubble, Claude's tool calls as tickets and
+ * Claude's answer as plain text on the paper. No new colours: ink, muted, rule and the two inks
+ * only on the tickets.
+ */
+
+.chat__who {
+  margin-bottom: 0.375rem;
+  color: var(--muted);
+  font-size: var(--step-data);
+  font-weight: 600;
+}
+
+.chat__item--tool {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.chat__item[hidden] {
+  display: none;
+}
+
+.chat__item--more {
+  display: flex;
+}
+
+.chat__more {
+  color: var(--muted);
+  font-size: var(--step-data);
+}
+
+.chat__more-link {
+  color: var(--ink);
+}
+
+.chat__output summary {
+  width: fit-content;
+  color: var(--muted);
+  font-size: var(--step-data);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chat__output-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+}
+
+.chat__output-json {
+  max-height: 24rem;
+  overflow: auto;
+  font: 400 var(--step-data) / 1.5 var(--font-mono);
+}
+
+/* Claude's answer ------------------------------------------------------------------------------ */
+.answer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+  max-width: 68ch;
+}
+
+/* In the height-capped preview, blocks keep their size and are cut by the fade instead. */
+.answer > * {
+  flex-shrink: 0;
+}
+
+.answer ul,
+.answer ol {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding-left: 1.25rem;
+}
+
+.answer li::marker {
+  color: var(--muted);
+}
+
+.answer code {
+  font: 400 var(--step-data) / 1.4 var(--font-mono);
+}
+
+.md__heading {
+  margin: 0.75rem 0 0;
+  font-size: var(--step-lead);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.md__table {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+}
+
+.md__table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--step-data);
+  font-variant-numeric: tabular-nums;
+}
+
+.md__table th,
+.md__table td {
+  padding: 0.375rem 0.75rem;
+  border-top: 1px solid var(--rule);
+  text-align: left;
+  vertical-align: top;
+}
+
+.md__table thead th {
+  border-top: 0;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* Hero: only the opening of the answer, fading into the paper. */
+.answer--preview {
+  max-height: 17rem;
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, #000 60%, transparent);
+}
+
+.answer--preview .md__table {
+  overflow: hidden;
+}
+
+.chat__item--assistant .chat__more {
+  margin-top: 0.5rem;
+}
+
+/* Transcripts section -------------------------------------------------------------------------- */
+.tr__intro {
+  max-width: 60ch;
+  margin-bottom: 1.5rem;
+}
+
+.tr__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.tr__tab {
+  margin-bottom: -1px;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid transparent;
+  border-bottom: 0;
+  border-radius: 4px 4px 0 0;
+  background: transparent;
+  color: var(--muted);
+  font: 600 var(--step-body) / 1.2 var(--font-body);
+  text-align: left;
+  cursor: pointer;
+}
+
+.tr__tab:hover {
+  color: var(--ink);
+}
+
+.tr__tab[aria-selected="true"] {
+  border-color: var(--rule);
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: inset 0 3px 0 var(--ink);
+}
+
+.tr__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-top: 1.5rem;
+}
+
+.tr__panel[hidden] {
+  display: none;
+}
+
+.chat--full {
+  gap: 1.5rem;
+}
+
+.tr__meta {
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--rule);
+  color: var(--muted);
+  font-size: var(--step-data);
+  overflow-wrap: anywhere;
+}
+
+/* Under 640 px the tabs stack, so the four titles stay readable. */
+@media (max-width: 639px) {
+  .tr__tabs {
+    flex-direction: column;
+    gap: 0;
+    border-bottom: 0;
+    border-left: 1px solid var(--rule);
+  }
+
+  .tr__tab {
+    margin: 0 0 0 -1px;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .tr__tab[aria-selected="true"] {
+    box-shadow: inset 3px 0 0 var(--ink);
+  }
+}

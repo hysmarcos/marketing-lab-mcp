@@ -1,0 +1,106 @@
+{
+  "id": "budget",
+  "title": "How should we split the budget?",
+  "lang": "en",
+  "model": "claude-opus-5-5",
+  "recorded_at": "2026-10-31",
+  "server_url": "stdio (local build of this repo)",
+  "steps": [
+    {
+      "type": "user",
+      "text": "We spend about $41k a week across TV, out-of-home, print, Facebook and search. How should we split it to sell more?"
+    },
+    {
+      "type": "tool_call",
+      "tool": "budget_optimize",
+      "input": {},
+      "output": {
+        "allocation": {
+          "tv": 0,
+          "ooh": 0,
+          "print": 17883.84,
+          "facebook": 13155.93,
+          "search": 10072.51
+        },
+        "total_weekly": 41112.28,
+        "horizon_weeks": 13,
+        "media_sales": {
+          "median": 4645352.186720569,
+          "p05": 2671223.035783792,
+          "p95": 7245544.893963179
+        },
+        "vs_current": {
+          "media_sales_diff_median": 1158437.7626469405,
+          "pct": 33.22243169058282
+        },
+        "out_of_range": [],
+        "warnings": [],
+        "source": "Bayesian MMM (PyMC-Marketing) fitted on Meta Robyn's simulated demo data (MIT), via github.com/hysmarcos/marketing-mix-model"
+      }
+    },
+    {
+      "type": "tool_call",
+      "tool": "budget_simulate",
+      "input": {},
+      "output": {
+        "weekly_spend": {
+          "tv": 9473.501538461544,
+          "ooh": 9648.615384615387,
+          "print": 5938.31794871795,
+          "facebook": 3510.3127196879145,
+          "search": 12541.53846153847
+        },
+        "horizon_weeks": 13,
+        "media_sales": {
+          "median": 3486914.424073628,
+          "p05": 2126288.150375158,
+          "p95": 5882172.785250592
+        },
+        "vs_current": {
+          "media_sales_diff_median": 0,
+          "pct": 0
+        },
+        "out_of_range": [],
+        "warnings": [],
+        "source": "Bayesian MMM (PyMC-Marketing) fitted on Meta Robyn's simulated demo data (MIT), via github.com/hysmarcos/marketing-mix-model"
+      }
+    },
+    {
+      "type": "tool_call",
+      "tool": "budget_optimize",
+      "input": {
+        "min": {
+          "tv": 4700,
+          "ooh": 4800
+        }
+      },
+      "output": {
+        "allocation": {
+          "tv": 4700,
+          "ooh": 4800,
+          "print": 12644.91,
+          "facebook": 11222.36,
+          "search": 7745.01
+        },
+        "total_weekly": 41112.280000000006,
+        "horizon_weeks": 13,
+        "media_sales": {
+          "median": 4272196.757417122,
+          "p05": 2670374.2100207503,
+          "p95": 6533700.218832794
+        },
+        "vs_current": {
+          "media_sales_diff_median": 785282.3333434938,
+          "pct": 22.520837561194824
+        },
+        "out_of_range": [],
+        "warnings": [],
+        "source": "Bayesian MMM (PyMC-Marketing) fitted on Meta Robyn's simulated demo data (MIT), via github.com/hysmarcos/marketing-mix-model"
+      }
+    },
+    {
+      "type": "assistant",
+      "text": "An important caveat first: the only marketing mix model I have was fitted on **Meta Robyn's simulated demo dataset**, not on your data. That demo business also spends about $41.1k a week on these same five channels, so the numbers below show how a reallocation would work. They don't measure your channels. To get advice for your real budget, the model would have to be refitted on your own weekly spend and sales history.\n\n## What the model suggests (demo data, 13-week horizon)\n\n| Channel | Current $/wk | Model's best split | Softer split (keep half of TV and OOH) |\n|---|---|---|---|\n| TV | 9,474 | **0** | 4,700 |\n| Out-of-home | 9,649 | **0** | 4,800 |\n| Print | 5,938 | 17,884 | 12,645 |\n| Facebook | 3,510 | 13,156 | 11,222 |\n| Search | 12,542 | 10,073 | 7,745 |\n| **Media-driven sales (median)** | **$3.49M** | **$4.65M (+33%)** | **$4.27M (+23%)** |\n\nAll three plans keep the same total budget. No channel goes above the highest weekly spend in the data, so the model isn't extrapolating here.\n\n## How to read it\n\n- **Direction:** move money out of TV and out-of-home and into print and Facebook. Trim search slightly. According to the model, TV and OOH are already past the point where extra spend adds much, while Facebook and print still have room to grow.\n- **The uncertainty is wide.** The 90% range for sales is about $2.1M–$5.9M under the current plan and $2.7M–$7.2M under the best split. These ranges overlap a lot, so the 33% is a central estimate, not a promise.\n- **I wouldn't cut TV and OOH to zero in one go.** That's a corner solution: the model only allocates by marginal return. It doesn't account for brand effects outside its 13-week window or for what would happen if those channels are switched off. The softer split keeps half of TV and OOH and still captures about two-thirds of the gain, which makes it a safer first step.\n\n## Next steps I'd recommend\n\n1. Refit the model on your own weekly spend and sales history. Until then, these numbers are an illustration.\n2. Move budget in stages, for example 10–20% from TV/OOH into Facebook/print, and watch what happens.\n3. Test it properly: run a geo or holdout test on whichever channel you cut. That's the only way to prove what the channel actually adds. I can work out how large that test would need to be."
+    }
+  ]
+}

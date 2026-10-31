@@ -24,7 +24,10 @@ import {
   type Traffic,
 } from "./mcp";
 import { renderResult } from "./render";
-import { RUN_LABEL, renderTicket, setTicketRunLabel } from "./ticket";
+import { provideRunner, RUN_LABELS, setSharedMode } from "./session";
+import { renderTicket, setTicketRunLabel } from "./ticket";
+
+export { RUN_LABELS };
 
 /**
  * The playground: pick a tool, fill the form generated from its input schema, run it in the page
@@ -37,12 +40,6 @@ export const LIVE_FALLBACK_NOTICE =
 export const LIVE_NOT_DEPLOYED = "The live server is not deployed yet, so the tools run here.";
 export const BROWSER_NOTE = "The MCP server runs inside this page. Nothing is sent anywhere.";
 export const MAX_LOG = 200;
-
-/** The ticket's run button names where the call will run (Ruling 21). */
-export const RUN_LABELS: Record<Mode, { run: string; running: string }> = {
-  browser: { run: "Run in your browser", running: "Running in your browser…" },
-  live: { run: RUN_LABEL, running: "Running on the live server…" },
-};
 
 /** Lines in the message log where the transport changes. */
 export const LOG_MARKERS: Record<Mode, string> = {
@@ -354,6 +351,8 @@ export async function mountPlayground(
   function render(): void {
     // The alert stays in the DOM; only its text changes, so screen readers announce it reliably.
     if (notice.textContent !== state.notice) notice.textContent = state.notice;
+    // Transcript tickets elsewhere on the page follow the same mode.
+    setSharedMode(state.mode);
     for (const [mode, radio] of radios) {
       radio.checked = mode === state.mode;
       radio.disabled = running || (mode === "live" && !liveUrl);
@@ -496,6 +495,20 @@ export async function mountPlayground(
     return session;
   }
 
+  /**
+   * Runs a call for another part of the page (a transcript ticket) on this client, with the same
+   * fallback to the browser when the live server fails. The messages appear in this log.
+   */
+  async function runShared(name: string, args: Record<string, unknown>): Promise<CallToolResult> {
+    try {
+      return await callTool(current(), name, args);
+    } catch (error) {
+      if (!(error instanceof LiveUnavailableError)) throw error;
+      if (current().mode === "live") await fallBackToBrowser();
+      return await callTool(current(), name, args);
+    }
+  }
+
   async function run(name: string, args: Record<string, unknown>, fromTicket: boolean) {
     if (state.busy || !session) return;
     running = true;
@@ -618,4 +631,5 @@ export async function mountPlayground(
   renderToolList();
   const first = tools[0];
   if (first) selectTool(first.name);
+  provideRunner(runShared, state.mode);
 }

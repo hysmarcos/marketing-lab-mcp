@@ -307,7 +307,7 @@ code {
   font-weight: 600;
 }
 
-/* Transcript (placeholder until the player arrives) ------------------------------------------ */
+/* Conversation (the hero and the transcripts; the player adds transcripts.css) ---------------- */
 .chat {
   display: flex;
   flex-direction: column;

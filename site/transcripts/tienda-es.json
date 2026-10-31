@@ -1,0 +1,279 @@
+{
+  "id": "tienda-es",
+  "title": "Olist: ventas, clientes y leads",
+  "lang": "es",
+  "model": "claude-opus-5-5",
+  "recorded_at": "2026-10-31",
+  "server_url": "stdio (local build of this repo)",
+  "steps": [
+    {
+      "type": "user",
+      "text": "Mirando la tienda de Olist: ¿qué categorías venden más, qué clientes estamos por perder y qué canal trae los leads que más cierran?"
+    },
+    {
+      "type": "tool_call",
+      "tool": "store_sales",
+      "input": {
+        "group_by": "category",
+        "metric": "revenue",
+        "top": 10
+      },
+      "output": {
+        "group_by": "category",
+        "metric": "revenue",
+        "rows": [
+          {
+            "key": "health_beauty",
+            "value": 1229557.5,
+            "orders": 8610,
+            "revenue": 1229557.5
+          },
+          {
+            "key": "watches_gifts",
+            "value": 1163465.91,
+            "orders": 5491,
+            "revenue": 1163465.91
+          },
+          {
+            "key": "bed_bath_table",
+            "value": 1022955.77,
+            "orders": 9267,
+            "revenue": 1022955.77
+          },
+          {
+            "key": "sports_leisure",
+            "value": 952840.4,
+            "orders": 7513,
+            "revenue": 952840.4
+          },
+          {
+            "key": "computers_accessories",
+            "value": 888055.59,
+            "orders": 6518,
+            "revenue": 888055.59
+          },
+          {
+            "key": "furniture_decor",
+            "value": 706237.17,
+            "orders": 6258,
+            "revenue": 706237.17
+          },
+          {
+            "key": "housewares",
+            "value": 614341.62,
+            "orders": 5734,
+            "revenue": 614341.62
+          },
+          {
+            "key": "cool_stuff",
+            "value": 609158,
+            "orders": 3552,
+            "revenue": 609158
+          },
+          {
+            "key": "auto",
+            "value": 577838.39,
+            "orders": 3802,
+            "revenue": 577838.39
+          },
+          {
+            "key": "garden_tools",
+            "value": 469135.4,
+            "orders": 3443,
+            "revenue": 469135.4
+          }
+        ],
+        "groups": 72,
+        "total": {
+          "orders": 97007,
+          "revenue": 13181027.13
+        },
+        "warnings": [
+          "Orders are counted once per category they contain, so an order with items in two categories counts in each; totals can exceed the distinct orders by under 1%."
+        ],
+        "source": "Olist, Brazilian E-Commerce Public Dataset, Kaggle (CC BY-NC-SA 4.0), aggregated"
+      }
+    },
+    {
+      "type": "tool_call",
+      "tool": "customer_rfm",
+      "input": {},
+      "output": {
+        "mode": "olist",
+        "as_of": "2018-09-01",
+        "rules": [
+          "Population: customer_unique_id with at least one delivered order purchased before as_of.",
+          "R = whole days from the date of the customer's last purchase to as_of. F = distinct delivered orders. M = sum of item prices (no freight, BRL) over those orders.",
+          "R score: pandas qcut into 5 bins of rank(method='first') of R ascending, then reversed, so R=5 is the most recent fifth. Ties are ranked in input order (customers sorted by customer_unique_id).",
+          "M score: pandas qcut into 5 bins of rank(method='first') of M ascending, so M=5 is the highest-spending fifth. Ties are ranked in input order.",
+          "F score: 1 order -> 1, 2 orders -> 3, 3 or more orders -> 5.",
+          "Segment, first match wins: champions (R>=4 and F>=3), loyal (F>=3), big_spenders_new (R>=4 and M=5), recent (R>=4), needs_attention (R=3), at_risk_high_value (R<=2 and M>=4), hibernating (otherwise).",
+          "State = customer_state of the customer's most recent order."
+        ],
+        "total_customers": 93358,
+        "segments": [
+          {
+            "segment": "champions",
+            "customers": 1203,
+            "share": 0.012885880160243364,
+            "revenue": 325603.02,
+            "avg_recency_days": 91.2,
+            "avg_orders": 2.153,
+            "avg_monetary": 270.66
+          },
+          {
+            "segment": "loyal",
+            "customers": 1598,
+            "share": 0.017116904818012382,
+            "revenue": 402805.73,
+            "avg_recency_days": 321.9,
+            "avg_orders": 2.084,
+            "avg_monetary": 252.07
+          },
+          {
+            "segment": "big_spenders_new",
+            "customers": 6902,
+            "share": 0.07393046123524497,
+            "revenue": 2816346.39,
+            "avg_recency_days": 94.2,
+            "avg_orders": 1,
+            "avg_monetary": 408.05
+          },
+          {
+            "segment": "recent",
+            "customers": 29238,
+            "share": 0.3131815163135457,
+            "revenue": 2255292.26,
+            "avg_recency_days": 92.7,
+            "avg_orders": 1,
+            "avg_monetary": 77.14
+          },
+          {
+            "segment": "needs_attention",
+            "customers": 18070,
+            "share": 0.19355598877439534,
+            "revenue": 2347553.29,
+            "avg_recency_days": 222.5,
+            "avg_orders": 1,
+            "avg_monetary": 129.91
+          },
+          {
+            "segment": "at_risk_high_value",
+            "customers": 13784,
+            "share": 0.14764669337389405,
+            "revenue": 3815846.24,
+            "avg_recency_days": 397.1,
+            "avg_orders": 1,
+            "avg_monetary": 276.83
+          },
+          {
+            "segment": "hibernating",
+            "customers": 22563,
+            "share": 0.2416825553246642,
+            "revenue": 1258051.18,
+            "avg_recency_days": 397.7,
+            "avg_orders": 1,
+            "avg_monetary": 55.76
+          }
+        ],
+        "warnings": [],
+        "source": "Olist, Brazilian E-Commerce Public Dataset, Kaggle (CC BY-NC-SA 4.0), aggregated"
+      }
+    },
+    {
+      "type": "tool_call",
+      "tool": "lead_funnel",
+      "input": {
+        "group_by": "origin"
+      },
+      "output": {
+        "group_by": "origin",
+        "rows": [
+          {
+            "key": "organic_search",
+            "mqls": 2296,
+            "deals": 271,
+            "conversion_rate": 0.11803135888501742,
+            "median_days_to_close": 14
+          },
+          {
+            "key": "paid_search",
+            "mqls": 1586,
+            "deals": 195,
+            "conversion_rate": 0.12295081967213115,
+            "median_days_to_close": 15
+          },
+          {
+            "key": "unknown",
+            "mqls": 1159,
+            "deals": 193,
+            "conversion_rate": 0.16652286453839515,
+            "median_days_to_close": 11
+          },
+          {
+            "key": "social",
+            "mqls": 1350,
+            "deals": 75,
+            "conversion_rate": 0.05555555555555555,
+            "median_days_to_close": 30
+          },
+          {
+            "key": "direct_traffic",
+            "mqls": 499,
+            "deals": 56,
+            "conversion_rate": 0.11222444889779559,
+            "median_days_to_close": 10
+          },
+          {
+            "key": "referral",
+            "mqls": 284,
+            "deals": 24,
+            "conversion_rate": 0.08450704225352113,
+            "median_days_to_close": 18.5
+          },
+          {
+            "key": "email",
+            "mqls": 493,
+            "deals": 15,
+            "conversion_rate": 0.030425963488843813,
+            "median_days_to_close": 21
+          },
+          {
+            "key": "display",
+            "mqls": 118,
+            "deals": 6,
+            "conversion_rate": 0.05084745762711865,
+            "median_days_to_close": 8.5
+          },
+          {
+            "key": "other",
+            "mqls": 150,
+            "deals": 4,
+            "conversion_rate": 0.02666666666666667,
+            "median_days_to_close": 9
+          },
+          {
+            "key": "other_publicities",
+            "mqls": 65,
+            "deals": 3,
+            "conversion_rate": 0.046153846153846156,
+            "median_days_to_close": 35
+          }
+        ],
+        "totals": {
+          "mqls": 8000,
+          "deals": 842,
+          "conversion_rate": 0.10525
+        },
+        "warnings": [
+          "1 deal(s) in scope have negative days_to_close (won before the recorded first contact date, a quirk of the source). They are kept, so medians can include a negative value."
+        ],
+        "source": "Olist, Marketing Funnel by Olist, Kaggle (https://www.kaggle.com/datasets/olistbr/marketing-funnel-olist)"
+      }
+    },
+    {
+      "type": "assistant",
+      "text": "Revisé los tres frentes con los datos públicos de Olist (pedidos entregados entre enero de 2017 y agosto de 2018, importes en reales brasileños sin flete).\n\n## 1. Categorías que más venden\n\n| # | Categoría | Ingresos (BRL) | Pedidos | Ticket medio |\n|---|---|---|---|---|\n| 1 | health_beauty | 1,23 M | 8.610 | ~143 |\n| 2 | watches_gifts | 1,16 M | 5.491 | **~212** |\n| 3 | bed_bath_table | 1,02 M | **9.267** | ~110 |\n| 4 | sports_leisure | 0,95 M | 7.513 | ~127 |\n| 5 | computers_accessories | 0,89 M | 6.518 | ~136 |\n| 6 | furniture_decor | 0,71 M | 6.258 | ~113 |\n| 7 | housewares | 0,61 M | 5.734 | ~107 |\n| 8 | cool_stuff | 0,61 M | 3.552 | ~172 |\n| 9 | auto | 0,58 M | 3.802 | ~152 |\n| 10 | garden_tools | 0,47 M | 3.443 | ~136 |\n\n- Hay 72 categorías y estas 10 suman alrededor del 63 % de los 13,2 M BRL de ingresos.\n- **health_beauty** es la que más factura.\n- **bed_bath_table** es la que más pedidos tiene, pero su ticket es bajo.\n- **watches_gifts** factura casi lo mismo que la primera con un 36 % menos de pedidos, porque su ticket medio es el más alto.\n\n## 2. Clientes que estamos por perder\n\nHice una segmentación RFM (según lo reciente de la última compra, la frecuencia y el gasto) de 93.358 clientes, con fecha de corte 1 de septiembre de 2018.\n\n| Segmento | Clientes | % | Ingresos históricos | Días desde la última compra |\n|---|---|---|---|---|\n| **at_risk_high_value** | 13.784 | 14,8 % | **3,82 M BRL** (el segmento que más ha aportado) | ~397 |\n| needs_attention | 18.070 | 19,4 % | 2,35 M BRL | ~222 |\n| hibernating | 22.563 | 24,2 % | 1,26 M BRL | ~398 |\n\n- **Prioridad 1: at_risk_high_value.** Son clientes del 40 % que más gasta (media de 277 BRL) que llevan más de un año sin comprar. Es el segmento que más ingresos ha dejado, así que es el primero que conviene intentar recuperar.\n- **Prioridad 2: needs_attention.** Llevan unos 7 meses sin comprar y todavía se pueden recuperar a menor coste.\n- **Hibernating:** gastaron poco y hace mucho que no compran. No vale la pena invertir mucho en ellos.\n- **Un problema de fondo:** solo el 3 % de los clientes repite compra (champions y loyal, que en estos datos significa haber hecho al menos 2 pedidos). Casi todos compran una sola vez. También hay 6.902 clientes nuevos que gastaron mucho (big_spenders_new, 408 BRL de media); conseguir que vuelvan a comprar es la mejor forma de que no acaben en el grupo en riesgo.\n\n## 3. Canal cuyos leads cierran más\n\nSon 8.000 leads cualificados de marketing (empresas que pidieron vender en Olist) y 842 acuerdos cerrados, un 10,5 % de conversión media.\n\n| Canal | Leads | Acuerdos | Conversión | Mediana de días hasta cerrar |\n|---|---|---|---|---|\n| organic_search | 2.296 | **271** | 11,8 % | 14 |\n| paid_search | 1.586 | 195 | **12,3 %** | 15 |\n| unknown | 1.159 | 193 | 16,7 % | 11 |\n| direct_traffic | 499 | 56 | 11,2 % | 10 |\n| social | 1.350 | 75 | 5,6 % | 30 |\n| email | 493 | 15 | **3,0 %** | 21 |\n\n- **La búsqueda es el mejor canal.** La orgánica aporta más acuerdos y la de pago tiene una conversión algo mayor. Esa diferencia (12,3 % frente a 11,8 %) no es estadísticamente significativa, así que en la práctica rinden igual.\n- **\"unknown\" tiene la conversión más alta (16,7 %)**, pero no sabemos de qué canal vienen esos leads. Antes de sacar conclusiones conviene corregir el registro del origen.\n- **Social y email rinden poco.** Social genera mucho volumen pero cierra la mitad que la media y tarda el doble. Email cierra solo el 3 %.\n\n**Advertencia:** son datos históricos y públicos de Olist, no de un negocio en marcha. Además, la conversión de los leads más recientes sale más baja porque tuvieron menos tiempo para cerrar."
+    }
+  ]
+}

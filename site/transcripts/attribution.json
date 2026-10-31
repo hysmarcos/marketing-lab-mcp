@@ -1,0 +1,176 @@
+{
+  "id": "attribution",
+  "title": "How wrong is last click?",
+  "lang": "en",
+  "model": "claude-opus-5-5",
+  "recorded_at": "2026-10-31",
+  "server_url": "stdio (local build of this repo)",
+  "steps": [
+    {
+      "type": "user",
+      "text": "Our dashboard uses last click. Using the sample journeys, how wrong is that, and which model gets closest to the truth?"
+    },
+    {
+      "type": "tool_call",
+      "tool": "attribution_compare",
+      "input": {},
+      "output": {
+        "channels": ["display", "paid_social", "paid_search", "email", "organic_search", "direct"],
+        "total_conversions": 1820,
+        "models": {
+          "last_touch": {
+            "display": {
+              "credit": 98,
+              "share": 0.053846
+            },
+            "paid_social": {
+              "credit": 109,
+              "share": 0.05989
+            },
+            "paid_search": {
+              "credit": 305,
+              "share": 0.167582
+            },
+            "email": {
+              "credit": 483,
+              "share": 0.265385
+            },
+            "organic_search": {
+              "credit": 326,
+              "share": 0.179121
+            },
+            "direct": {
+              "credit": 499,
+              "share": 0.274176
+            }
+          },
+          "first_touch": {
+            "display": {
+              "credit": 747,
+              "share": 0.41044
+            },
+            "paid_social": {
+              "credit": 553,
+              "share": 0.303846
+            },
+            "paid_search": {
+              "credit": 243,
+              "share": 0.133516
+            },
+            "email": {
+              "credit": 46,
+              "share": 0.025275
+            },
+            "organic_search": {
+              "credit": 210,
+              "share": 0.115385
+            },
+            "direct": {
+              "credit": 21,
+              "share": 0.011538
+            }
+          },
+          "linear": {
+            "display": {
+              "credit": 407.0464,
+              "share": 0.223652
+            },
+            "paid_social": {
+              "credit": 346.044,
+              "share": 0.190134
+            },
+            "paid_search": {
+              "credit": 287.1452,
+              "share": 0.157772
+            },
+            "email": {
+              "credit": 269.9357,
+              "share": 0.148316
+            },
+            "organic_search": {
+              "credit": 262.4476,
+              "share": 0.144202
+            },
+            "direct": {
+              "credit": 247.381,
+              "share": 0.135924
+            }
+          },
+          "markov": {
+            "display": {
+              "credit": 335.9922,
+              "share": 0.184611
+            },
+            "paid_social": {
+              "credit": 314.8064,
+              "share": 0.172971
+            },
+            "paid_search": {
+              "credit": 294.0083,
+              "share": 0.161543
+            },
+            "email": {
+              "credit": 290.2187,
+              "share": 0.159461
+            },
+            "organic_search": {
+              "credit": 294.9184,
+              "share": 0.162043
+            },
+            "direct": {
+              "credit": 290.0559,
+              "share": 0.159371
+            }
+          },
+          "shapley": {
+            "display": {
+              "credit": 408.4167,
+              "share": 0.224405
+            },
+            "paid_social": {
+              "credit": 346.9667,
+              "share": 0.190641
+            },
+            "paid_search": {
+              "credit": 282.3833,
+              "share": 0.155156
+            },
+            "email": {
+              "credit": 272.4,
+              "share": 0.14967
+            },
+            "organic_search": {
+              "credit": 262.85,
+              "share": 0.144423
+            },
+            "direct": {
+              "credit": 246.9833,
+              "share": 0.135705
+            }
+          }
+        },
+        "truth": {
+          "display": 0.32678,
+          "paid_social": 0.253148,
+          "paid_search": 0.179832,
+          "email": 0.12209,
+          "organic_search": 0.094486,
+          "direct": 0.023664
+        },
+        "error_vs_truth": {
+          "last_touch": 0.15948,
+          "first_touch": 0.051752,
+          "linear": 0.062734,
+          "markov": 0.080212,
+          "shapley": 0.063186
+        },
+        "warnings": [],
+        "source": "simulated journeys (seed 42), marketing-lab-mcp"
+      }
+    },
+    {
+      "type": "assistant",
+      "text": "On the sample journeys, last-click attribution is the least accurate of the five models. Its channel shares are off by **16 percentage points per channel on average**, about three times worse than the best model. **First-touch comes closest (5.2 points off)**, with linear and Shapley close behind.\n\n### How far off last-click is, by channel (share of 1,820 conversions)\n\n| Channel | True share | Last-click | Gap |\n|---|---|---|---|\n| display | 32.7% | 5.4% | **−27.3 pts** (credit ~6× too low) |\n| paid_social | 25.3% | 6.0% | **−19.3 pts** (credit ~4× too low) |\n| paid_search | 18.0% | 16.8% | −1.2 pts (about right) |\n| email | 12.2% | 26.5% | **+14.3 pts** (credit ~2× too high) |\n| organic_search | 9.4% | 17.9% | +8.5 pts |\n| direct | 2.4% | 27.4% | **+25.1 pts** (credit ~12× too high) |\n\nLast-click credits whatever happens right before the purchase. So direct and email, which mostly close sales that other channels started, look like your best channels. Display and paid_social, which bring people in at the start, look like waste. If you moved budget based on this dashboard, you'd cut the channels that do the most work.\n\n### Model ranking (average error per channel vs. the true shares)\n\n1. **First-touch: 5.2 pts**\n2. Linear: 6.3 pts\n3. Shapley: 6.3 pts\n4. Markov: 8.0 pts\n5. **Last-click: 15.9 pts**\n\n### Caveats\n- **This is simulated data, not yours.** The true shares come from the simulator's own assumptions. First-touch wins here partly because of how the simulator builds journeys: the opening channels do most of the work, and the middle touches are random. That random middle is also why Markov does worse than you might expect. On your data, the ranking could be different.\n- **What holds up regardless:** last-click badly under-credits the channels that start journeys and over-credits the ones that close them. That pattern is typical in real data too.\n- **No model can measure what a channel actually adds.** They only split up credit. To find out what display or paid_social really drive, you'd need a holdout test (turn the channel off for a random group and compare).\n\nI can rerun this comparison on your own journey data, up to 2,000 distinct paths, or estimate how big a holdout test would need to be for a given channel."
+    }
+  ]
+}

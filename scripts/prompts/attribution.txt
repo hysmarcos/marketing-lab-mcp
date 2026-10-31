@@ -1,0 +1,1 @@
+Our dashboard uses last click. Using the sample journeys, how wrong is that, and which model gets closest to the truth?

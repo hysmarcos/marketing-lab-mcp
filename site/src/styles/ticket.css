@@ -8,7 +8,8 @@
  */
 .ticket {
   --ticket-ground: var(--paper);
-  --stub-w: 8.75rem;
+  /* Wide enough for "Run in your browser" on two lines at most. */
+  --stub-w: 11rem;
   --hole: 3px;
   --hole-pitch: 14px;
   --notch: 11px;

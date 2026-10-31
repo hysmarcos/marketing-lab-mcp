@@ -4,6 +4,12 @@ Writes data/journeys_sample.json: 20,000 simulated users (numpy seed 42), aggreg
 channel path, plus the true share of each channel. No raw data is involved; the file is fully
 reproducible from this script.
 
+Random draw order (one generator, so changing the order or the size of any draw changes every
+value after it): path lengths (`users` Poisson draws), first touch (`users` draws), middle touches
+(`users` x 8 uniform draws, one per position, even for positions a path never reaches), last touch
+(`users` draws, made for every user, even for paths of one touch), and finally the conversion
+outcome (`users` uniform draws).
+
 Run with: uv run python -m prep journeys
 """
 

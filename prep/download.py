@@ -54,14 +54,18 @@ def _md5(path: Path) -> str:
 def _fetch_fallback(name: str, dest: Path) -> None:
     url, expected_md5 = FALLBACKS[name]
     gz_path = dest.with_name(dest.name + ".gz")
+    tmp = dest.with_name(dest.name + ".part")
     _download(url, gz_path)
     try:
         if _md5(gz_path) != expected_md5:
             raise RuntimeError(f"checksum mismatch for the fallback mirror of {name}")
-        with gzip.open(gz_path, "rb") as src, dest.open("wb") as out:
+        # Unzip into a .part file and rename it, so a failed unzip never leaves a partial `dest`.
+        with gzip.open(gz_path, "rb") as src, tmp.open("wb") as out:
             shutil.copyfileobj(src, out)
+        tmp.replace(dest)
     finally:
         gz_path.unlink(missing_ok=True)
+        tmp.unlink(missing_ok=True)
 
 
 def fetch(name: str) -> Path:

@@ -148,6 +148,10 @@ conversion probability, the tool can score attribution models against it.
 - **Last touch** (only for paths of two or more touches) is drawn from direct .35, email .25,
   organic_search .20, paid_search .15, paid_social .03, display .02.
 - **Middle touches** are uniform over the six channels. Repeats are allowed.
+- **Draw order** (one generator, so any change here changes every value after it): path lengths,
+  first touches, middle touches, last touches, then the conversion outcomes. The middle draw takes
+  users x 8 values (one per position, used or not) and the last draw is made for every user, even
+  for paths of one touch.
 - **Conversion:** the chance that a user converts is `p = 1 - 0.99 * prod(1 - e_c)` over the set
   of channels in the path, with e: display .06, paid_social .05, paid_search .04, email .03,
   organic_search .02, direct .005. The outcome is one Bernoulli draw per user. A user who converts

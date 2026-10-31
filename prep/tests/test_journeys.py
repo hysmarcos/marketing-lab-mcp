@@ -56,3 +56,11 @@ def test_display_is_undervalued_by_last_touch(sample):
 
 def test_direct_is_overvalued_by_last_touch(sample):
     assert last_touch_shares(sample)["direct"] > sample["truth"]["direct"]
+
+
+def test_simulation_reproduces_the_committed_sample(sample):
+    # Unmarked on purpose: it takes about 0.1 s and runs in CI. If it fails, either the generator
+    # or its draw order changed (see the docstring of prep/journeys.py) or the sample is stale.
+    from prep.journeys import simulate
+
+    assert json.loads(json.dumps(simulate())) == sample

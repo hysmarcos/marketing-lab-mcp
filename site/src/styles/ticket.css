@@ -48,11 +48,12 @@
   color: var(--muted);
 }
 
+/* The name carries a <wbr> after each underscore (ticket.ts), so it wraps between words. */
 .ticket__tool {
   margin: 0.25rem 0 0.875rem;
   font-size: var(--step-lead);
   line-height: 1.3;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .ticket__args {
@@ -285,7 +286,13 @@
 }
 
 /* Narrow tickets tear along the bottom instead of the right ---------------------------------- */
-@container (max-width: 27rem) {
+/* Below 31rem the stub would leave the inputs too little room (numbers broke across lines), so
+   the ticket tears along the bottom and the name steps down to body size. */
+@container (max-width: 31rem) {
+  .ticket__tool {
+    font-size: var(--step-body);
+  }
+
   .ticket__sheet {
     grid-template-columns: minmax(0, 1fr);
   }

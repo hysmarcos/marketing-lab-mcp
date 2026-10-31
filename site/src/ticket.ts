@@ -1,5 +1,7 @@
 import "./styles/ticket.css";
 
+import { breakAtUnderscores } from "./wbr";
+
 /**
  * The "tool ticket": the one bold element on the page. Every tool call (in the hero, the
  * transcripts and the playground) renders as a ticket. The body is the recording, printed in a
@@ -159,7 +161,9 @@ export function renderTicket(opts: TicketOptions): HTMLElement {
 
   const body = el("div", "ticket__body");
   body.append(el("p", "ticket__method", "tools/call"));
-  const tool = el("p", "ticket__tool", opts.tool);
+  // Long names wrap after an underscore ("email_test_" / "analyze"), never inside a word.
+  const tool = el("p", "ticket__tool");
+  tool.append(breakAtUnderscores(opts.tool));
   tool.id = `${id}-tool`;
   body.append(tool);
 

@@ -30,6 +30,7 @@ import { renderResult } from "./render";
 import { provideRunner, RUN_LABELS, setSharedMode } from "./session";
 import { attachTabInk } from "./tab-ink";
 import { renderTicket, setTicketRunLabel } from "./ticket";
+import { breakAtUnderscores } from "./wbr";
 
 export { RUN_LABELS };
 
@@ -420,10 +421,9 @@ export async function mountPlayground(
         const button = el("button", "pg__tool");
         button.type = "button";
         button.dataset.tool = tool.name;
-        button.append(
-          el("span", "pg__tool-title", tool.title ?? tool.name),
-          el("code", "pg__tool-name", tool.name),
-        );
+        const code = el("code", "pg__tool-name");
+        code.append(breakAtUnderscores(tool.name));
+        button.append(el("span", "pg__tool-title", tool.title ?? tool.name), code);
         button.addEventListener("click", () => selectTool(tool.name));
         li.append(button);
         return li;
@@ -456,7 +456,9 @@ export async function mountPlayground(
     fields = fieldsFromSchema(tool.inputSchema as JSONSchema);
     controls = buildFields(fields, `pg-${name}`);
     fieldsSlot.replaceChildren(controls.element);
-    formTitle.replaceChildren(tool.title ?? name, " ", el("code", "pg__form-name", name));
+    const code = el("code", "pg__form-name");
+    code.append(breakAtUnderscores(name));
+    formTitle.replaceChildren(tool.title ?? name, " ", code);
     const [lead, rest] = firstSentence(tool.description ?? "");
     formLead.textContent = lead;
     formMoreText.textContent = tool.description ?? "";

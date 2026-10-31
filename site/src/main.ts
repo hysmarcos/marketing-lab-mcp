@@ -61,3 +61,36 @@ try {
 } finally {
   reveal();
 }
+
+// Playground: its MCP client and server load when the section comes near the screen. They share
+// the tools chunk with the hero, so this adds only the SDK.
+const playground = required<HTMLElement>("[data-playground]");
+let playgroundStarted = false;
+function startPlayground(): void {
+  if (playgroundStarted) return;
+  playgroundStarted = true;
+  import("./playground")
+    .then(({ mountPlayground }) => mountPlayground(playground))
+    .catch((error: unknown) => {
+      console.error("Could not start the playground.", error);
+      const message = document.createElement("p");
+      message.className = "section__note";
+      message.setAttribute("role", "alert");
+      message.textContent = "The playground could not start. Reload the page to try again.";
+      playground.replaceChildren(message);
+    });
+}
+if ("IntersectionObserver" in window) {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        observer.disconnect();
+        startPlayground();
+      }
+    },
+    { rootMargin: "600px 0px" },
+  );
+  observer.observe(playground);
+} else {
+  startPlayground();
+}

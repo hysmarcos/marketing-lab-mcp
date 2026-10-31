@@ -1,0 +1,22 @@
+[project]
+name = "marketing-lab-prep"
+version = "0.1.0"
+description = "Offline data preparation and reference fixtures for marketing-lab-mcp"
+requires-python = ">=3.12"
+dependencies = [
+  "pandas",
+  "scipy",
+  "statsmodels",
+]
+
+[dependency-groups]
+dev = [
+  "pytest",
+  "ruff",
+]
+
+[tool.pytest.ini_options]
+markers = ["raw: tests that need the raw datasets in .cache/raw/"]
+
+[tool.ruff]
+line-length = 100

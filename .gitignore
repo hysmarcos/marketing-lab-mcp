@@ -1,0 +1,10 @@
+node_modules/
+.cache/
+dist/
+site/dist/
+.wrangler/
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.superpowers/

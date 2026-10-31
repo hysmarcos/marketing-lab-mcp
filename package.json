@@ -1,0 +1,27 @@
+{
+  "name": "marketing-lab-mcp",
+  "version": "0.1.0",
+  "description": "MCP server with marketing decision tools: A/B tests, incrementality, budget allocation and more.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Marcos Hoyos",
+  "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "lint": "biome check .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/client": "2.4.0",
+    "@modelcontextprotocol/server": "2.4.0",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.4",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "vite": "8.3.5",
+    "vitest": "5.0.5",
+    "wrangler": "4.156.0"
+  }
+}

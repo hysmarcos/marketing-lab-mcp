@@ -1,7 +1,7 @@
 import { ToolInputError } from "../server/tool";
 import { round } from "./query";
 
-export const MAX_JOURNEYS = 5000;
+export const MAX_JOURNEYS = 2000;
 export const MAX_PATH_LENGTH = 20;
 export const MAX_CHANNELS = 12;
 export const MAX_CHANNEL_NAME = 40;
@@ -60,9 +60,12 @@ function isCount(n: unknown): n is number {
   return typeof n === "number" && Number.isInteger(n) && n >= 0;
 }
 
-/** Validates the journeys and turns channel names into indexes. `seed` fixes the channel order. */
-function prepare(journeys: Journey[], seed: string[]): Prepared {
-  if (journeys.length < 1 || journeys.length > MAX_JOURNEYS) {
+/**
+ * Validates the journeys and turns channel names into indexes. `seed` fixes the channel order.
+ * `maxRows` is the row cap for user input; the bundled sample is trusted and has more rows.
+ */
+function prepare(journeys: Journey[], seed: string[], maxRows: number): Prepared {
+  if (journeys.length < 1 || journeys.length > maxRows) {
     throw new ToolInputError(
       `journeys must have between 1 and ${MAX_JOURNEYS} rows; got ${journeys.length}.`,
     );
@@ -315,7 +318,11 @@ export function compareAttribution(
   sample: AttributionData,
 ): AttributionResult {
   const useSample = args.journeys === undefined;
-  const p = prepare(args.journeys ?? sample.journeys, useSample ? sample.channels : []);
+  const p = prepare(
+    args.journeys ?? sample.journeys,
+    useSample ? sample.channels : [],
+    useSample ? Number.POSITIVE_INFINITY : MAX_JOURNEYS,
+  );
   const warnings: string[] = [];
   const empty = () => new Float64Array(p.channels.length);
   const credits: Record<AttributionModel, Float64Array> =

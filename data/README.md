@@ -156,6 +156,13 @@ conversion probability, the tool can score attribution models against it.
 The setup is built on purpose to fool last-touch: display and paid_social start most journeys and
 work hardest, while direct and email close most of them but add little.
 
+What the sample shows (mean absolute error of the shares, lower is better): last touch is by far the
+worst (0.159); first touch (0.052), linear (0.063) and Shapley (0.063) land closest to the truth,
+and Markov (0.080) sits in between. Markov does not win here because the generator draws middle
+touches uniformly, so a first-order chain over the channels sees little structure and flattens the
+shares toward equal. This is a property of this simulator, not a general ranking: a data-driven
+model does not always beat a rule-based one.
+
 ### Truth: counterfactual removal effect
 
 For channel c, `lift_c` is the sum over all users of `p - p_without_c`, where `p_without_c` is the

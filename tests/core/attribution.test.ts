@@ -135,8 +135,11 @@ describe("compareAttribution edge cases", () => {
     );
   });
 
-  it("rejects more than 5000 rows", () => {
-    const journeys = Array.from({ length: 5001 }, () => ({
+  it("accepts 2000 rows and rejects 2001", () => {
+    const rows = (n: number): Journey[] =>
+      Array.from({ length: n }, () => ({ path: ["A"], conversions: 1, nulls: 0 }));
+    expect(compareAttribution({ journeys: rows(2000) }, EMPTY).total_conversions).toBe(2000);
+    const journeys = Array.from({ length: 2001 }, () => ({
       path: ["A"],
       conversions: 1,
       nulls: 0,

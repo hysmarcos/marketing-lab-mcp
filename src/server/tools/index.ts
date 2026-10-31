@@ -1,6 +1,7 @@
 import type { ToolSpec } from "../tool";
 import { abTestEvaluate } from "./ab_test_evaluate";
 import { abTestPlan } from "./ab_test_plan";
+import { attributionCompare } from "./attribution_compare";
 import { budgetOptimize } from "./budget_optimize";
 import { budgetSimulate } from "./budget_simulate";
 import { customerRfm } from "./customer_rfm";
@@ -18,4 +19,5 @@ export const TOOLS: ToolSpec[] = [
   storeSales,
   customerRfm,
   leadFunnel,
+  attributionCompare,
 ];

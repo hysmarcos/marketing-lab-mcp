@@ -140,4 +140,25 @@ describe("queryStoreSales", () => {
     const one = queryStoreSales(sales, { group_by: "state", category: "toys" });
     expect(one.warnings.join(" ")).not.toMatch(/once per category/);
   });
+
+  it("explains a valid combination of filters that matches nothing", () => {
+    let pair: [string, string] | null = null;
+    outer: for (const [ci, category] of sales.categories.entries()) {
+      for (const [si, state] of sales.states.entries()) {
+        const hit = sales.rows.c.some((c, i) => c === ci && sales.rows.s[i] === si);
+        if (!hit) {
+          pair = [category, state];
+          break outer;
+        }
+      }
+    }
+    expect(pair).not.toBeNull();
+    const [category, state] = pair as [string, string];
+    const out = queryStoreSales(sales, { group_by: "month", category, state });
+    expect(out.rows).toEqual([]);
+    expect(out.groups).toBe(0);
+    expect(out.warnings.join(" ")).toMatch(/No orders match these filters/);
+    expect(out.warnings.join(" ")).toContain(category);
+    expect(out.warnings.join(" ")).toContain(state);
+  });
 });

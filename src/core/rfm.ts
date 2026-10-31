@@ -1,4 +1,5 @@
 import { ToolInputError } from "../server/tool";
+import { round } from "./query";
 import { OLIST_SOURCE } from "./store";
 
 export const SEGMENTS = [
@@ -67,9 +68,10 @@ export type RfmResult = {
   source: string;
 };
 
-export const MAX_CUSTOMERS = 5000;
+export const MAX_CUSTOMERS = 2000;
 const MIN_FOR_QUINTILES = 5;
 const DAY_MS = 86_400_000;
+const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 const CUSTOM_RULES = [
   "R = whole days from the customer's last_order_date to as_of. F = number of orders. M = revenue.",
@@ -94,9 +96,10 @@ export function quintileBin(rank: number, n: number): number {
 /**
  * Quintile of each value, ranking ascending with ties broken by input order (pandas
  * `rank(method="first")`). A numeric typed-array sort finds where each distinct value starts;
- * equal values then take consecutive ranks in input order.
+ * equal values then take consecutive ranks in input order. `tiesSplit` is true when equal values
+ * ended up in different quintiles, which is when the input order changes a score.
  */
-function rankBins(values: number[]): number[] {
+function rankBins(values: number[]): { bins: number[]; tiesSplit: boolean } {
   const n = values.length;
   const sorted = Float64Array.from(values).sort();
   const nextRank = new Map<number, number>();
@@ -104,14 +107,20 @@ function rankBins(values: number[]): number[] {
     const v = sorted[pos] as number;
     if (pos === 0 || v !== sorted[pos - 1]) nextRank.set(v, pos + 1);
   }
+  const firstBin = new Map<number, number>();
+  let tiesSplit = false;
   const bins = new Array<number>(n);
   for (let i = 0; i < n; i++) {
     const v = values[i] as number;
     const rank = nextRank.get(v) as number;
     nextRank.set(v, rank + 1);
-    bins[i] = quintileBin(rank, n);
+    const bin = quintileBin(rank, n);
+    const seen = firstBin.get(v);
+    if (seen === undefined) firstBin.set(v, bin);
+    else if (seen !== bin) tiesSplit = true;
+    bins[i] = bin;
   }
-  return bins;
+  return { bins, tiesSplit };
 }
 
 export function frequencyScore(orders: number): number {
@@ -129,19 +138,35 @@ export function segmentFor(r: number, f: number, m: number): Segment {
   return "hibernating";
 }
 
-/** Days since 1970-01-01 (UTC) of a YYYY-MM-DD date, or a ToolInputError naming the field. */
+function digits(value: string, start: number, length: number): number {
+  let n = 0;
+  for (let i = start; i < start + length; i++) {
+    const c = value.charCodeAt(i) - 48;
+    if (c < 0 || c > 9) return Number.NaN;
+    n = n * 10 + c;
+  }
+  return n;
+}
+
+/**
+ * Days since 1970-01-01 of a YYYY-MM-DD calendar date (proleptic Gregorian, no Date object), or a
+ * ToolInputError naming the field.
+ */
 function parseDay(value: string, field: string, customerId?: string): number {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-  if (match) {
-    const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])];
-    const ms = Date.UTC(year, month - 1, day);
-    const back = new Date(ms);
-    if (
-      back.getUTCFullYear() === year &&
-      back.getUTCMonth() === month - 1 &&
-      back.getUTCDate() === day
-    ) {
-      return ms / DAY_MS;
+  if (value.length === 10 && value[4] === "-" && value[7] === "-") {
+    const year = digits(value, 0, 4);
+    const month = digits(value, 5, 2);
+    const day = digits(value, 8, 2);
+    const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+    const monthLength = (DAYS_IN_MONTH[month - 1] ?? 0) + (month === 2 && leap ? 1 : 0);
+    if (day >= 1 && day <= monthLength) {
+      // days_from_civil: the year starts in March so the leap day is the last day of the year.
+      const y = month <= 2 ? year - 1 : year;
+      const era = Math.floor(y / 400);
+      const yoe = y - era * 400;
+      const doy = Math.floor((153 * (month + (month > 2 ? -3 : 9)) + 2) / 5) + day - 1;
+      const doe = yoe * 365 + Math.floor(yoe / 4) - Math.floor(yoe / 100) + doy;
+      return era * 146097 + doe - 719468;
     }
   }
   const label = customerId === undefined ? field : `Customer '${customerId}' ${field}`;
@@ -181,10 +206,6 @@ function validateCustomers(customers: RfmCustomer[]): void {
   }
 }
 
-/**
- * Scores customers with the Task 5 rules: R and M quintiles inside the list (ties in input order),
- * F from the order count. The result is in input order.
- */
 /** Parses every last_order_date once per distinct string (lists usually repeat dates). */
 function parseLastDays(customers: RfmCustomer[]): number[] {
   const cache = new Map<string, number>();
@@ -198,11 +219,12 @@ function parseLastDays(customers: RfmCustomer[]): number[] {
   });
 }
 
+/**
+ * Scores customers with the Task 5 rules: R and M quintiles inside the list (ties in input order),
+ * F from the order count. The result is in input order.
+ */
 export function scoreCustomers(customers: RfmCustomer[], asOf: string): ScoredCustomer[] {
-  const lastDays = customers.map((c) =>
-    parseDay(c.last_order_date, "last_order_date", c.customer_id),
-  );
-  return scoreWithDays(customers, lastDays, asOf);
+  return scoreWithDays(customers, parseLastDays(customers), asOf).scored;
 }
 
 /** `lastDays[i]` is the parsed last_order_date of `customers[i]` (see parseDay). */
@@ -210,7 +232,7 @@ function scoreWithDays(
   customers: RfmCustomer[],
   lastDays: number[],
   asOf: string,
-): ScoredCustomer[] {
+): { scored: ScoredCustomer[]; tiesSplit: boolean } {
   const asOfDay = parseDay(asOf, "as_of");
   const recency = lastDays.map((day, i) => {
     const days = asOfDay - day;
@@ -222,12 +244,12 @@ function scoreWithDays(
     }
     return days;
   });
-  const recencyBins = rankBins(recency);
-  const moneyBins = rankBins(customers.map((c) => c.revenue));
-  return customers.map((c, i) => {
-    const r = 5 - (recencyBins[i] as number);
+  const recencyRank = rankBins(recency);
+  const moneyRank = rankBins(customers.map((c) => c.revenue));
+  const scored = customers.map((c, i) => {
+    const r = 5 - (recencyRank.bins[i] as number);
     const f = frequencyScore(c.orders);
-    const m = 1 + (moneyBins[i] as number);
+    const m = 1 + (moneyRank.bins[i] as number);
     return {
       customer_id: c.customer_id,
       last_order_date: c.last_order_date,
@@ -240,17 +262,13 @@ function scoreWithDays(
       segment: segmentFor(r, f, m),
     };
   });
+  return { scored, tiesSplit: recencyRank.tiesSplit || moneyRank.tiesSplit };
 }
 
 type Totals = { customers: number; revenue: number; recency: number; orders: number };
 
 function emptyTotals(): Totals {
   return { customers: 0, revenue: 0, recency: 0, orders: 0 };
-}
-
-function round(value: number, decimals: number): number {
-  const f = 10 ** decimals;
-  return Math.round(value * f) / f;
 }
 
 /** Turns per-segment sums (recency and orders summed over customers) into output rows. */
@@ -277,23 +295,17 @@ function toRows(
   return rows;
 }
 
-function hasTies(values: number[]): boolean {
-  return new Set(values).size < values.length;
-}
-
 function queryCustom(
   customers: RfmCustomer[],
   asOfArg: string | undefined,
   segment: Segment | undefined,
 ): RfmResult {
   validateCustomers(customers);
-  const lastDays = customers.map((c) =>
-    parseDay(c.last_order_date, "last_order_date", c.customer_id),
-  );
+  const lastDays = parseLastDays(customers);
   let latest = lastDays[0] as number;
   for (const d of lastDays) if (d > latest) latest = d;
   const asOf = asOfArg ?? formatDay(latest + 1);
-  const scored = scoreWithDays(customers, lastDays, asOf);
+  const { scored, tiesSplit } = scoreWithDays(customers, lastDays, asOf);
 
   const bySegment = new Map<Segment, Totals>();
   for (const c of scored) {
@@ -310,9 +322,9 @@ function queryCustom(
     warnings.push(
       `Only ${scored.length} customer(s), fewer than ${MIN_FOR_QUINTILES}: quintiles are not meaningful, so the R and M scores and segments below are arbitrary.`,
     );
-  } else if (hasTies(scored.map((c) => c.recency_days)) || hasTies(scored.map((c) => c.revenue))) {
+  } else if (tiesSplit) {
     warnings.push(
-      "Some customers share the same last_order_date or revenue. Ties are ranked in input order, so reordering the list can move tied customers between score groups.",
+      "Customers with the same last_order_date or revenue straddle a score boundary. Ties are ranked in input order, so reordering the list can change their R or M scores.",
     );
   }
   if (asOfArg === undefined) {

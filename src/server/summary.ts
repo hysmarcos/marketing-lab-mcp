@@ -49,3 +49,10 @@ export function fitSummary(head: string[], details: string[], warnings: string[]
   const text = lines.join("\n");
   return text.length <= MAX_SUMMARY_LENGTH ? text : `${text.slice(0, MAX_SUMMARY_LENGTH - 3)}...`;
 }
+
+/** Summary for an empty result: a short head plus the first warning (the reason), shortened. */
+export function noRowsSummary(head: string, warnings: string[]): string {
+  const [first = ""] = warnings;
+  const trimmed = first.length > 700 ? `${first.slice(0, 697)}...` : first;
+  return trimmed ? `${head} ${trimmed}` : head;
+}

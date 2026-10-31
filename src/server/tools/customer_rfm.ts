@@ -1,7 +1,7 @@
 import { z } from "zod";
 import rfm from "../../../data/olist_rfm.json";
-import { queryRfm, type RfmData, type RfmResult, SEGMENTS } from "../../core/rfm";
-import { brl, fitSummary, groupDigits } from "../summary";
+import { MAX_CUSTOMERS, queryRfm, type RfmData, type RfmResult, SEGMENTS } from "../../core/rfm";
+import { brl, fitSummary, groupDigits, noRowsSummary } from "../summary";
 import type { ToolSpec } from "../tool";
 
 const data = rfm as RfmData;
@@ -46,10 +46,10 @@ const input = z.strictObject({
   customers: z
     .array(customer)
     .min(1)
-    .max(5000)
+    .max(MAX_CUSTOMERS)
     .optional()
     .describe(
-      "Your own customers, 1 to 5000, each with customer_id, last_order_date (YYYY-MM-DD), orders and revenue. When given, they are scored and segmented with the same rules inside your list and the Olist data is not used.",
+      "Your own customers, 1 to 2000, each with customer_id, last_order_date (YYYY-MM-DD), orders and revenue. When given, they are scored and segmented with the same rules inside your list and the Olist data is not used.",
     ),
   as_of: z
     .string()
@@ -62,15 +62,13 @@ const input = z.strictObject({
 
 function summarize(out: RfmResult): string {
   if (out.segments.length === 0) {
-    const [first = ""] = out.warnings;
-    const trimmed = first.length > 700 ? `${first.slice(0, 697)}...` : first;
-    return trimmed ? `No segments to show. ${trimmed}` : "No segments to show.";
+    return noRowsSummary("No segments to show.", out.warnings);
   }
   const olist = out.mode === "olist";
   const money = (n: number) => (olist ? brl(n) : groupDigits(n));
   const noun = (n: number) => (n === 1 ? "customer" : "customers");
   const head = [
-    `${olist ? "Olist customers, RFM as of 2018-09-01, money in BRL" : `Your customers, RFM as of ${out.as_of}`}: ${groupDigits(out.total_customers)} ${noun(out.total_customers)} in scope, ${out.segments.length} segment(s) shown. Recency is days since the last order.`,
+    `${olist ? `Olist customers, RFM as of ${out.as_of}, money in BRL` : `Your customers, RFM as of ${out.as_of}`}: ${groupDigits(out.total_customers)} ${noun(out.total_customers)} in scope, ${out.segments.length} segment(s) shown. Recency is days since the last order.`,
   ];
   const details = out.segments.map(
     (s) =>
@@ -83,7 +81,7 @@ export const customerRfm: ToolSpec<typeof input, RfmResult> = {
   name: "customer_rfm",
   title: "Customer RFM segments",
   description:
-    "Use to split customers into RFM segments (how Recently they bought, how Frequently, how much Money they spent) and see how big and valuable each segment is. Two modes. Without customers, it reads a fixed aggregate of the Olist public e-commerce dataset (Brazilian marketplace, 93,358 customers with delivered orders before 2018-09-01, money in Brazilian reais, BRL), optionally filtered to one Brazilian state (2-letter code such as SP or RJ) or one segment. With customers (1 to 5000, each with id, last_order_date, orders, revenue), it scores your list with the same rules and nothing is stored. Scores: R and M are quintiles from 1 to 5 (5 = most recent, highest spend; ties ranked in input order), F is 1 for one order, 3 for two, 5 for three or more. Segments, first match wins: champions, loyal, big_spenders_new, recent, needs_attention, at_risk_high_value, hibernating. Returns for each segment the customer count, share, revenue, average recency in days, average orders and average spend, plus the rules used. In Olist data, a frequency score of 3 means two orders, so loyal and champions need only two orders. With fewer than 5 of your own customers the quintiles are not meaningful.",
+    "Use to split customers into RFM segments (how Recently they bought, how Frequently, how much Money they spent) and see how big and valuable each segment is. Two modes. Without customers, it reads a fixed aggregate of the Olist public e-commerce dataset (Brazilian marketplace, 93,358 customers with delivered orders before 2018-09-01, money in Brazilian reais, BRL), optionally filtered to one Brazilian state (2-letter code such as SP or RJ) or one segment. With customers (1 to 2000, each with id, last_order_date, orders, revenue), it scores your list with the same rules and nothing is stored. Scores: R and M are quintiles from 1 to 5 (5 = most recent, highest spend; ties ranked in input order), F is 1 for one order, 3 for two, 5 for three or more. Segments, first match wins: champions, loyal, big_spenders_new, recent, needs_attention, at_risk_high_value, hibernating. Returns for each segment the customer count, share, revenue, average recency in days, average orders and average spend, plus the rules used. In Olist data, a frequency score of 3 means two orders, so loyal and champions need only two orders. With fewer than 5 of your own customers the quintiles are not meaningful.",
   input,
   run: (args) => queryRfm(data, args),
   summarize,

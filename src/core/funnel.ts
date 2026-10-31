@@ -1,4 +1,4 @@
-import { ToolInputError } from "../server/tool";
+import { checkMonthRange, monthWindow, normalizeKey } from "./query";
 
 /** data/olist_funnel.json: leads (MQLs) per contact month and origin, and one entry per closed deal. */
 export type FunnelData = {
@@ -41,21 +41,6 @@ export type FunnelResult = {
 };
 
 const THIN_MQLS = 30;
-const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
-
-function checkMonth(name: string, value: string | undefined): void {
-  if (value !== undefined && !MONTH_PATTERN.test(value)) {
-    throw new ToolInputError(`${name} must be a month in YYYY-MM format, for example 2018-03.`);
-  }
-}
-
-/** Lower case, trimmed, with spaces and hyphens turned into underscores. */
-function normalizeKey(value: string): string {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/[\s-]+/g, "_");
-}
 
 /** True median: the middle value, or the average of the two middle values for an even count. */
 function median(values: number[]): number | null {
@@ -81,17 +66,7 @@ export function queryFunnel(
   },
 ): FunnelResult {
   const groupBy = args.group_by ?? "origin";
-  checkMonth("from_month", args.from_month);
-  checkMonth("to_month", args.to_month);
-  if (
-    args.from_month !== undefined &&
-    args.to_month !== undefined &&
-    args.from_month > args.to_month
-  ) {
-    throw new ToolInputError(
-      `from_month (${args.from_month}) is after to_month (${args.to_month}).`,
-    );
-  }
+  checkMonthRange(args.from_month, args.to_month);
 
   const warnings: string[] = [];
   const empty = (): FunnelResult => ({
@@ -114,16 +89,15 @@ export function queryFunnel(
   }
 
   const { months, origins, counts } = data.mql;
-  const first = months[0] ?? "";
-  const last = months[months.length - 1] ?? "";
-  const from = args.from_month ?? first;
-  const to = args.to_month ?? last;
-  if (from > last || to < first) {
-    warnings.push(
-      `No leads in the requested months: the data covers contact months ${first} to ${last}.`,
-    );
+  const window = monthWindow(months, args.from_month, args.to_month, {
+    noun: "leads",
+    monthKind: "contact",
+  });
+  if (window.warning) {
+    warnings.push(window.warning);
     return empty();
   }
+  const { from, to } = window;
 
   // MQLs by month and by origin, for the months and origin in scope.
   const mqlsByMonth = new Map<string, number>();
@@ -183,6 +157,12 @@ export function queryFunnel(
       conversion_rate: rate(days.length, mqls),
       median_days_to_close: median(days),
     });
+  }
+  if (rows.length === 0) {
+    warnings.push(
+      `No leads match these filters (${origin !== undefined ? `origin ${origin}, ` : ""}contact months ${from} to ${to}). Each filter is valid on its own; try loosening one.`,
+    );
+    return empty();
   }
   if (groupBy === "month") {
     rows.sort((a, b) => (a.key < b.key ? -1 : 1));

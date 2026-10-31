@@ -176,4 +176,15 @@ describe("other groupings and filters", () => {
     expect(() => queryFunnel(funnel, { from_month: "2018-5" })).toThrow(ToolInputError);
     expect(() => queryFunnel(funnel, { to_month: "2018-13" })).toThrow(ToolInputError);
   });
+
+  it("explains a valid origin with no leads in the range", () => {
+    const out = queryFunnel(funnel, {
+      origin: "other_publicities",
+      from_month: "2017-06",
+      to_month: "2017-06",
+    });
+    expect(out.rows).toEqual([]);
+    expect(out.warnings.join(" ")).toMatch(/No leads match these filters/);
+    expect(out.warnings.join(" ")).toContain("other_publicities");
+  });
 });

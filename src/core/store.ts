@@ -1,4 +1,5 @@
 import { ToolInputError } from "../server/tool";
+import { checkMonthRange, monthWindow, normalizeKey, round } from "./query";
 
 /** data/olist_sales.json: a columnar cube of delivered orders; the row arrays index into the lists. */
 export type SalesData = {
@@ -48,27 +49,6 @@ export const OLIST_SOURCE =
 const DEFAULT_TOP = 10;
 const MAX_TOP = 50;
 const THIN_ORDERS = 30;
-const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
-
-function checkMonth(name: string, value: string | undefined): void {
-  if (value !== undefined && !MONTH_PATTERN.test(value)) {
-    throw new ToolInputError(`${name} must be a month in YYYY-MM format, for example 2018-03.`);
-  }
-}
-
-/** Lower case, trimmed, with spaces and hyphens turned into underscores. */
-function normalizeKey(value: string): string {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/[\s-]+/g, "_");
-}
-
-function round(value: number, decimals: number): number {
-  const f = 10 ** decimals;
-  return Math.round(value * f) / f;
-}
-
 export function queryStoreSales(
   data: SalesData,
   args: {
@@ -86,15 +66,7 @@ export function queryStoreSales(
   if (!Number.isInteger(top) || top < 1 || top > MAX_TOP) {
     throw new ToolInputError(`top must be a whole number between 1 and ${MAX_TOP}.`);
   }
-  checkMonth("from_month", args.from_month);
-  checkMonth("to_month", args.to_month);
-  if (args.from_month !== undefined && args.to_month !== undefined) {
-    if (args.from_month > args.to_month) {
-      throw new ToolInputError(
-        `from_month (${args.from_month}) is after to_month (${args.to_month}).`,
-      );
-    }
-  }
+  checkMonthRange(args.from_month, args.to_month);
 
   const warnings: string[] = [];
   const empty = (): StoreSalesResult => ({
@@ -127,16 +99,15 @@ export function queryStoreSales(
   }
   if (warnings.length > 0) return empty();
 
-  const first = data.months[0] ?? "";
-  const last = data.months[data.months.length - 1] ?? "";
-  const from = args.from_month ?? first;
-  const to = args.to_month ?? last;
-  if (from > last || to < first) {
-    warnings.push(
-      `No sales in the requested months: the data covers purchase months ${first} to ${last}.`,
-    );
+  const window = monthWindow(data.months, args.from_month, args.to_month, {
+    noun: "sales",
+    monthKind: "purchase",
+  });
+  if (window.warning) {
+    warnings.push(window.warning);
     return empty();
   }
+  const { from, to } = window;
   const monthOk = data.months.map((m) => m >= from && m <= to);
 
   const size =
@@ -203,6 +174,17 @@ export function queryStoreSales(
     });
   }
   const groups = rows.length;
+  if (groups === 0) {
+    const filters = [
+      categoryIndex >= 0 ? `category ${data.categories[categoryIndex]}` : null,
+      stateIndex >= 0 ? `state ${data.states[stateIndex]}` : null,
+      args.from_month || args.to_month ? `months ${from} to ${to}` : null,
+    ].filter((f) => f !== null);
+    warnings.push(
+      `No orders match these filters (${filters.join(", ")}). Each filter is valid on its own; try loosening one.`,
+    );
+    return empty();
+  }
   const shown = args.group_by === "month" ? rows : rows.slice(0, top);
 
   if (categoryIndex < 0) {

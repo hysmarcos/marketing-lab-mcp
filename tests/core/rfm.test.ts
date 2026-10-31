@@ -56,7 +56,7 @@ describe("quintileBin", () => {
 
   it("puts a single customer in the first bin and never leaves 0..4", () => {
     expect(quintileBin(1, 1)).toBe(0);
-    for (const n of [2, 3, 4, 5, 6, 7, 99, 5000]) {
+    for (const n of [2, 3, 4, 5, 6, 7, 99, 2000]) {
       for (const r of [1, Math.ceil(n / 2), n]) {
         const b = quintileBin(r, n);
         expect(b).toBeGreaterThanOrEqual(0);
@@ -138,8 +138,8 @@ describe("queryRfm custom mode", () => {
     expect(out.segments[0]?.share).toBeCloseTo(13 / 40, 9);
   });
 
-  it("rejects 5,001 customers", () => {
-    const customers = Array.from({ length: 5001 }, (_, i) => ({
+  it("rejects 2,001 customers", () => {
+    const customers = Array.from({ length: 2001 }, (_, i) => ({
       customer_id: `c${i}`,
       last_order_date: "2024-01-01",
       orders: 1,
@@ -148,15 +148,15 @@ describe("queryRfm custom mode", () => {
     expect(() => queryRfm(olist, { customers })).toThrow(ToolInputError);
   });
 
-  it("accepts exactly 5,000 customers", () => {
-    const customers = Array.from({ length: 5000 }, (_, i) => ({
+  it("accepts exactly 2,000 customers", () => {
+    const customers = Array.from({ length: 2000 }, (_, i) => ({
       customer_id: `c${i}`,
       last_order_date: "2024-01-01",
       orders: 1 + (i % 4),
       revenue: 1 + (i % 97),
     }));
     const out = queryRfm(olist, { customers });
-    expect(out.segments.reduce((sum, s) => sum + s.customers, 0)).toBe(5000);
+    expect(out.segments.reduce((sum, s) => sum + s.customers, 0)).toBe(2000);
   });
 
   it("rejects an empty list, bad dates, dates after as_of and repeated ids", () => {
@@ -229,5 +229,77 @@ describe("queryRfm Olist mode", () => {
     const text = out.warnings.join(" ");
     expect(text).toContain("XX");
     for (const s of new Set(olist.summary.map((r) => r.state))) expect(text).toContain(s);
+  });
+});
+
+describe("dates and ties", () => {
+  const one = (date: string, asOf: string) =>
+    scoreCustomers([{ customer_id: "a", last_order_date: date, orders: 1, revenue: 1 }], asOf)[0]
+      ?.recency_days;
+
+  it("counts whole days across leap days and year ends", () => {
+    expect(one("2024-02-28", "2024-03-01")).toBe(2);
+    expect(one("2023-02-28", "2023-03-01")).toBe(1);
+    expect(one("2023-12-31", "2024-01-01")).toBe(1);
+    expect(one("1970-01-01", "1970-01-31")).toBe(30);
+    expect(one("2000-02-29", "2000-03-01")).toBe(1);
+  });
+
+  it("agrees with Date arithmetic over many dates", () => {
+    const asOf = "2030-06-15";
+    for (let t = Date.UTC(1999, 0, 1); t < Date.UTC(2030, 5, 15); t += 37 * 86_400_000) {
+      const date = new Date(t).toISOString().slice(0, 10);
+      expect(one(date, asOf)).toBe(Math.round((Date.UTC(2030, 5, 15) - t) / 86_400_000));
+    }
+  });
+
+  it("rejects dates that do not exist", () => {
+    for (const bad of [
+      "2023-02-29",
+      "2100-02-29",
+      "2024-04-31",
+      "2024-00-10",
+      "2024-13-01",
+      "2024-1-01",
+      "abcd-ef-gh",
+    ]) {
+      expect(() => one(bad, "2025-01-01")).toThrow(/valid date/);
+    }
+    expect(one("2000-02-29", "2000-02-29")).toBe(0);
+  });
+
+  const base = { orders: 1 };
+  it("does not warn about ties that stay inside one score group", () => {
+    const customers = Array.from({ length: 10 }, (_, i) => ({
+      ...base,
+      customer_id: `c${i}`,
+      last_order_date: `2024-01-${String(i + 1).padStart(2, "0")}`,
+      revenue: i === 1 ? 10 : 10 + i * 10, // ranks 1 and 2 tie at 10 (same fifth)
+    }));
+    const out = queryRfm(olist, { customers, as_of: "2024-02-01" });
+    expect(out.warnings.join(" ")).not.toMatch(/straddle/);
+  });
+
+  it("warns when tied customers land in different score groups", () => {
+    const customers = Array.from({ length: 10 }, (_, i) => ({
+      ...base,
+      customer_id: `c${i}`,
+      last_order_date: "2024-01-01",
+      revenue: 10 + i,
+    }));
+    const out = queryRfm(olist, { customers, as_of: "2024-02-01" });
+    expect(out.warnings.join(" ")).toMatch(/straddle a score boundary/);
+  });
+});
+
+describe("empty segment filter", () => {
+  it("explains that no customer falls in the segment", () => {
+    const out = queryRfm(olist, {
+      customers: fixtureCustomers.filter((c) => c.orders === 1),
+      as_of: parity.as_of,
+      segment: "champions",
+    });
+    expect(out.segments).toEqual([]);
+    expect(out.warnings.join(" ")).toMatch(/No customers fall in/);
   });
 });

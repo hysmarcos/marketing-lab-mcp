@@ -1,19 +1,11 @@
 import { z } from "zod";
 import funnel from "../../../data/olist_funnel.json";
 import { type FunnelData, type FunnelResult, queryFunnel } from "../../core/funnel";
-import { fitSummary, groupDigits } from "../summary";
+import { fitSummary, groupDigits, noRowsSummary } from "../summary";
 import type { ToolSpec } from "../tool";
+import { monthField } from "./fields";
 
 const data = funnel as FunnelData;
-
-const monthField = (what: string) =>
-  z
-    .string()
-    .regex(/^\d{4}-\d{2}$/)
-    .optional()
-    .describe(
-      `${what} first-contact month to include, as YYYY-MM (for example 2018-01). Leads in the data first made contact in 2017-06 to 2018-05.`,
-    );
 
 const input = z.strictObject({
   group_by: z
@@ -29,8 +21,16 @@ const input = z.strictObject({
     .describe(
       "Only count leads from this origin, for example paid_search or organic_search. Case and spaces do not matter. An unknown name returns no rows and lists the valid origins.",
     ),
-  from_month: monthField("First"),
-  to_month: monthField("Last"),
+  from_month: monthField(
+    "First first-contact",
+    "2018-01",
+    "Leads in the data first made contact in 2017-06 to 2018-05.",
+  ),
+  to_month: monthField(
+    "Last first-contact",
+    "2018-03",
+    "Leads in the data first made contact in 2017-06 to 2018-05.",
+  ),
 });
 
 function percent(rate: number | null): string {
@@ -39,9 +39,7 @@ function percent(rate: number | null): string {
 
 function summarize(out: FunnelResult): string {
   if (out.rows.length === 0) {
-    const [first = ""] = out.warnings;
-    const trimmed = first.length > 700 ? `${first.slice(0, 697)}...` : first;
-    return trimmed ? `No rows matched the filters. ${trimmed}` : "No rows matched the filters.";
+    return noRowsSummary("No rows matched the filters.", out.warnings);
   }
   const head = [
     `Olist seller-acquisition funnel by ${out.group_by.replace("_", " ")} (data: leads first contacted 2017-06 to 2018-05). In scope: ${groupDigits(out.totals.mqls)} MQLs (marketing-qualified leads), ${groupDigits(out.totals.deals)} closed deals, ${percent(out.totals.conversion_rate)} conversion.`,

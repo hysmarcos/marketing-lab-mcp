@@ -6,19 +6,11 @@ import {
   type SalesMetric,
   type StoreSalesResult,
 } from "../../core/store";
-import { brl, fitSummary, groupDigits } from "../summary";
+import { brl, fitSummary, groupDigits, noRowsSummary } from "../summary";
 import type { ToolSpec } from "../tool";
+import { monthField } from "./fields";
 
 const data = sales as SalesData;
-
-const monthField = (what: string) =>
-  z
-    .string()
-    .regex(/^\d{4}-\d{2}$/)
-    .optional()
-    .describe(
-      `${what} purchase month to include, as YYYY-MM (for example 2017-11). The data covers purchase months 2017-01 to 2018-08.`,
-    );
 
 const input = z.strictObject({
   group_by: z
@@ -46,8 +38,16 @@ const input = z.strictObject({
     .describe(
       "Only count customers in this Brazilian state, as its 2-letter code such as SP, RJ, MG, RS or BA. Case does not matter. An unknown code returns no rows and lists the valid codes.",
     ),
-  from_month: monthField("First"),
-  to_month: monthField("Last"),
+  from_month: monthField(
+    "First purchase",
+    "2017-11",
+    "The data covers purchase months 2017-01 to 2018-08.",
+  ),
+  to_month: monthField(
+    "Last purchase",
+    "2018-03",
+    "The data covers purchase months 2017-01 to 2018-08.",
+  ),
   top: z
     .number()
     .int()
@@ -76,10 +76,7 @@ function formatValue(metric: SalesMetric, value: number | null): string {
 
 function summarize(out: StoreSalesResult): string {
   if (out.rows.length === 0) {
-    const head = "No rows matched the filters.";
-    const [first = ""] = out.warnings;
-    const trimmed = first.length > 700 ? `${first.slice(0, 697)}...` : first;
-    return trimmed ? `${head} ${trimmed}` : head;
+    return noRowsSummary("No rows matched the filters.", out.warnings);
   }
   const scope =
     out.group_by === "month"

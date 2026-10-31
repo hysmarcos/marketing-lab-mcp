@@ -1,6 +1,7 @@
 import type { Client } from "@modelcontextprotocol/client";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { TOOLS } from "../../src/server/tools";
+import { customerRfm } from "../../src/server/tools/customer_rfm";
 import parity from "../fixtures/rfm_parity.json";
 import { connectInMemory } from "./helpers";
 
@@ -51,8 +52,8 @@ describe("customer_rfm", () => {
     expect(summaryOf(result).length).toBeLessThanOrEqual(1200);
   });
 
-  it("returns a tool error for 5,001 customers", async () => {
-    const customers = Array.from({ length: 5001 }, (_, i) => ({
+  it("returns a tool error for 2,001 customers", async () => {
+    const customers = Array.from({ length: 2001 }, (_, i) => ({
       customer_id: `c${i}`,
       last_order_date: "2024-01-01",
       orders: 1,
@@ -84,5 +85,33 @@ describe("customer_rfm", () => {
     const result = await client.callTool({ name: "customer_rfm", arguments: { state: "XX" } });
     expect(result.isError).toBeFalsy();
     expect(summaryOf(result).length).toBeLessThanOrEqual(1200);
+  });
+});
+
+const clock = (globalThis as unknown as { performance: { now(): number } }).performance;
+
+describe("customer_rfm CPU budget", () => {
+  it("parses and scores 2,000 customers in under 5 ms (median of 20 runs)", () => {
+    const customers = Array.from({ length: 2000 }, (_, i) => {
+      const day = 1 + (i % 28);
+      const month = 1 + (i % 12);
+      return {
+        customer_id: `customer-${i}`,
+        last_order_date: `2024-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
+        orders: 1 + (i % 5),
+        revenue: Math.round(((i * 7919) % 100000) / 7) / 10,
+      };
+    });
+    const times: number[] = [];
+    for (let run = 0; run < 20; run++) {
+      const start = clock.now();
+      const parsed = customerRfm.input.parse({ customers });
+      const out = customerRfm.run(parsed);
+      customerRfm.summarize(out);
+      times.push(clock.now() - start);
+    }
+    times.sort((a, b) => a - b);
+    const median = ((times[9] ?? 0) + (times[10] ?? 0)) / 2;
+    expect(median).toBeLessThan(5);
   });
 });

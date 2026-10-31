@@ -41,13 +41,13 @@ svg {
 a {
   color: inherit;
   text-decoration-line: underline;
-  text-decoration-color: var(--ink-a);
+  text-decoration-color: var(--muted);
   text-decoration-thickness: var(--rule-width);
   text-underline-offset: 0.2em;
 }
 
 a:hover {
-  text-decoration-color: var(--ink-b);
+  text-decoration-color: var(--ink);
   text-decoration-thickness: 3px;
 }
 
@@ -84,6 +84,18 @@ code {
   line-height: 0.92;
 }
 
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
 .skip-link {
   position: absolute;
   top: 0.5rem;
@@ -111,8 +123,8 @@ code {
 }
 
 .button:hover:not(:disabled) {
-  background: var(--ink-a);
-  color: var(--on-ink-a);
+  background: var(--rule);
+  color: var(--ink);
 }
 
 .button:disabled {
@@ -131,7 +143,8 @@ code {
 }
 
 .button--small:hover:not(:disabled) {
-  border-color: var(--ink-a);
+  border-color: var(--ink);
+  background: transparent;
 }
 
 /* Masthead ------------------------------------------------------------------------------------ */
@@ -177,7 +190,7 @@ code {
 }
 
 .masthead__nav a:hover {
-  text-decoration-color: var(--ink-b);
+  text-decoration-color: var(--ink);
 }
 
 /* Hero ---------------------------------------------------------------------------------------- */
@@ -208,7 +221,7 @@ code {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  max-width: 34rem;
+  max-width: 38rem;
   margin-top: 0.5rem;
 }
 
@@ -218,12 +231,13 @@ code {
   font-weight: 600;
 }
 
+/* No overflow clipping here: it would cut the Copy URL button's focus ring. The button rounds
+   its own outer corners instead. */
 .urlbox__row {
   display: flex;
   align-items: stretch;
   border: var(--rule-width) solid var(--ink);
   border-radius: 6px;
-  overflow: hidden;
 }
 
 .urlbox__value {
@@ -241,11 +255,34 @@ code {
 
 .urlbox__row .button {
   border-left: var(--rule-width) solid var(--ink);
+  border-radius: 0 4.5px 4.5px 0;
 }
 
 .urlbox__row .button:disabled {
   border-left-style: dashed;
   border-left-color: var(--rule);
+}
+
+/* On phones the URL gets the full width and the button sits under it. */
+@media (max-width: 639px) {
+  .urlbox__row {
+    flex-direction: column;
+  }
+
+  .urlbox__value {
+    align-self: stretch;
+  }
+
+  .urlbox__row .button {
+    border-left: 0;
+    border-top: var(--rule-width) solid var(--ink);
+    border-radius: 0 0 4.5px 4.5px;
+  }
+
+  .urlbox__row .button:disabled {
+    border-top-style: dashed;
+    border-top-color: var(--rule);
+  }
 }
 
 .urlbox__status {

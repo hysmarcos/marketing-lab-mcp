@@ -14,7 +14,8 @@ export const LOCAL_SERVERS_GUIDE_URL =
   "https://modelcontextprotocol.io/docs/develop/connect-local-servers";
 export const MCP_CONNECTOR_DOCS_URL =
   "https://platform.claude.com/docs/en/agents-and-tools/mcp-connector";
-export const MCP_CONNECTOR_BETA = "mcp-client-2025-11-20";
+/** Newest documented header; it includes everything `mcp-client-2025-11-20` does. */
+export const MCP_CONNECTOR_BETA = "mcp-client-2026-09-15";
 
 const escapeHtml = (text: string) =>
   text.replace(
@@ -76,7 +77,7 @@ print(response.content[-1].text)`;
 
 function codeBlock(label: string, copyLabel: string, code: string): string {
   return `<div class="code">
-  <div class="code__head"><span>${escapeHtml(label)}</span><button class="button button--small" type="button" data-copy>${escapeHtml(copyLabel)}</button></div>
+  <div class="code__head"><span>${escapeHtml(label)}</span><button class="button button--small" type="button" data-copy>${escapeHtml(copyLabel)}</button><span class="visually-hidden" role="status" data-copy-status></span></div>
   <pre><code>${escapeHtml(code)}</code></pre>
 </div>`;
 }
@@ -111,11 +112,11 @@ export function renderConnect(liveUrl: string, repoUrl: string): DocumentFragmen
     ${codeBlock("Terminal", "Copy commands", localCommands(repoUrl))}
     <p>To let Claude Desktop start it for you, open <b>Settings → Developer → Edit Config</b>, add this with the absolute path to your clone, then quit and reopen Desktop.</p>
     ${codeBlock("claude_desktop_config.json", "Copy config", desktopConfig())}
-    <p class="connect__aside">More on local servers in the <a href="${LOCAL_SERVERS_GUIDE_URL}">MCP guide</a>.</p>
+    <p class="connect__aside">On Windows, write the path with forward slashes (<code>C:/Users/you/marketing-lab-mcp/src/runtimes/stdio.ts</code>) or double each backslash. More on local servers in the <a href="${LOCAL_SERVERS_GUIDE_URL}">MCP guide</a>.</p>
   </li>
   <li class="connect__block" id="connect-api">
     <h3 class="connect__title">For developers: the Claude API</h3>
-    <p>The Messages API can call a remote MCP server for you through the MCP connector (beta header <code>${MCP_CONNECTOR_BETA}</code>). It runs on your own API key and bills your account; this page never asks for one.</p>
+    <p>The Messages API can call a remote MCP server for you through the MCP connector (beta header <code>${MCP_CONNECTOR_BETA}</code>, Claude API only). It runs on your own API key and bills your account; this page never asks for one.</p>
     ${codeBlock("Python", "Copy code", apiExample(liveUrl))}
     <p class="connect__aside">Read the <a href="${MCP_CONNECTOR_DOCS_URL}">MCP connector docs</a> for auth, tool filters and other SDKs.</p>
   </li>
@@ -125,8 +126,10 @@ export function renderConnect(liveUrl: string, repoUrl: string): DocumentFragmen
   template.innerHTML = html;
   const fragment = template.content;
   for (const button of fragment.querySelectorAll<HTMLButtonElement>("[data-copy]")) {
-    const code = button.closest(".code")?.querySelector("code");
-    if (code) wireCopyButton(button, () => code.textContent ?? "");
+    const block = button.closest(".code");
+    const code = block?.querySelector("code");
+    const status = block?.querySelector<HTMLElement>("[data-copy-status]") ?? undefined;
+    if (code) wireCopyButton(button, () => code.textContent ?? "", { status, failOnButton: true });
   }
   return fragment;
 }

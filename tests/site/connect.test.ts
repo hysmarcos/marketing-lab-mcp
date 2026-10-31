@@ -1,6 +1,12 @@
 // @vitest-environment happy-dom
-import { describe, expect, it } from "vitest";
-import { apiExample, desktopConfig, renderConnect } from "../../site/src/connect";
+import { describe, expect, it, vi } from "vitest";
+import {
+  apiExample,
+  desktopConfig,
+  MCP_CONNECTOR_BETA,
+  renderConnect,
+} from "../../site/src/connect";
+import { COPIED_STATUS } from "../../site/src/copy";
 
 const REPO = "https://github.com/hysmarcos/marketing-lab-mcp";
 
@@ -30,9 +36,30 @@ describe("renderConnect", () => {
     );
   });
 
-  it("uses the MCP connector beta and a toolset that matches the server name", () => {
+  it("announces code-block copies in a polite live region", async () => {
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText: async () => {} },
+      configurable: true,
+    });
+    const host = document.createElement("div");
+    host.append(renderConnect("", REPO));
+    const block = host.querySelector("#connect-local .code") as HTMLElement;
+    const status = block.querySelector("[data-copy-status]");
+    expect(status?.getAttribute("role")).toBe("status");
+    block.querySelector<HTMLButtonElement>("[data-copy]")?.click();
+    await vi.waitFor(() => expect(status?.textContent).toBe(COPIED_STATUS));
+  });
+
+  it("hints at the Windows path format for the Desktop config", () => {
+    const host = document.createElement("div");
+    host.append(renderConnect("", REPO));
+    expect(host.querySelector("#connect-local")?.textContent).toContain("On Windows");
+  });
+
+  it("uses the newest MCP connector beta and a toolset that matches the server name", () => {
     const code = apiExample("");
-    expect(code).toContain('betas=["mcp-client-2025-11-20"]');
+    expect(MCP_CONNECTOR_BETA).toBe("mcp-client-2026-09-15");
+    expect(code).toContain('betas=["mcp-client-2026-09-15"]');
     expect(code).toContain('"name": "marketing-lab"');
     expect(code).toContain('"mcp_server_name": "marketing-lab"');
   });

@@ -24,7 +24,8 @@
       <div class="masthead__inner">
         <a class="wordmark" href="./">marketing-lab-mcp</a>
         <nav class="masthead__nav" aria-label="Sections">
-          <ul>
+          <!-- biome-ignore lint/a11y/noRedundantRoles: Safari drops list semantics when list-style is none -->
+          <ul role="list">
             <li><a href="#transcripts">Transcripts</a></li>
             <li><a href="#playground">Playground</a></li>
             <li><a href="#connect">Connect</a></li>
@@ -49,9 +50,17 @@
               <output class="urlbox__value" aria-labelledby="urlbox-label" data-urlbox-value
                 >Live URL coming soon</output
               >
-              <button class="button" type="button" data-urlbox-copy disabled>Copy URL</button>
+              <button
+                class="button"
+                type="button"
+                data-urlbox-copy
+                disabled
+                aria-describedby="urlbox-status"
+              >
+                Copy URL
+              </button>
             </div>
-            <p class="urlbox__status" role="status" data-urlbox-status>
+            <p class="urlbox__status" id="urlbox-status" role="status" data-urlbox-status>
               The public server is not deployed yet.
               <a href="#connect-local">Run it on your machine</a> in the meantime.
             </p>

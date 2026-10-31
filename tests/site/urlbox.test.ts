@@ -1,6 +1,12 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { COPIED_LABEL, COPY_FAILED, COPY_FAILED_SHORT, wireCopyButton } from "../../site/src/copy";
+import {
+  COPIED_LABEL,
+  COPIED_STATUS,
+  COPY_FAILED,
+  COPY_FAILED_SHORT,
+  wireCopyButton,
+} from "../../site/src/copy";
 import { setupUrlBox } from "../../site/src/urlbox";
 
 function urlBox(): HTMLElement {
@@ -8,7 +14,7 @@ function urlBox(): HTMLElement {
   root.innerHTML = `
     <output data-urlbox-value>Live URL coming soon</output>
     <button type="button" data-urlbox-copy disabled>Copy URL</button>
-    <p data-urlbox-status>Not deployed yet.</p>`;
+    <p id="status" data-urlbox-status>Not deployed yet.</p>`;
   return root;
 }
 
@@ -29,6 +35,7 @@ describe("setupUrlBox", () => {
     setupUrlBox(root, "");
     expect(root.dataset.state).toBe("empty");
     expect(button(root).disabled).toBe(true);
+    expect(button(root).getAttribute("aria-describedby")).toBe("status");
     expect(root.querySelector("[data-urlbox-value]")?.textContent).toBe("Live URL coming soon");
   });
 
@@ -40,12 +47,28 @@ describe("setupUrlBox", () => {
 
     expect(root.dataset.state).toBe("ready");
     expect(button(root).disabled).toBe(false);
+    expect(button(root).hasAttribute("aria-describedby")).toBe(false);
     expect(root.querySelector("[data-urlbox-value]")?.textContent).toBe(
       "https://example.workers.dev/mcp",
     );
     button(root).click();
     await vi.waitFor(() => expect(button(root).textContent).toBe(COPIED_LABEL));
     expect(writeText).toHaveBeenCalledWith("https://example.workers.dev/mcp");
+  });
+
+  it("puts the guidance back in the status line after announcing the copy", async () => {
+    vi.useFakeTimers();
+    mockClipboard(async () => {});
+    const root = urlBox();
+    setupUrlBox(root, "https://example.workers.dev/mcp");
+    const status = root.querySelector("[data-urlbox-status]");
+    const guidance = status?.textContent;
+    button(root).click();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(status?.textContent).toBe(COPIED_STATUS);
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(button(root).textContent).toBe("Copy URL");
+    expect(status?.textContent).toBe(guidance);
   });
 
   it("throws on incomplete markup", () => {
@@ -72,7 +95,7 @@ describe("wireCopyButton", () => {
     const copy = document.createElement("button");
     copy.textContent = "Copy URL";
     const status = document.createElement("p");
-    wireCopyButton(copy, () => "x", status);
+    wireCopyButton(copy, () => "x", { status, failOnButton: false });
     copy.click();
     await vi.waitFor(() => expect(status.textContent).toBe(COPY_FAILED));
     expect(copy.textContent).toBe("Copy URL");
@@ -85,5 +108,16 @@ describe("wireCopyButton", () => {
     wireCopyButton(copy, () => "x");
     copy.click();
     await vi.waitFor(() => expect(copy.textContent).toBe(COPY_FAILED_SHORT));
+  });
+
+  it("can fail on the button and announce in a hidden status at once", async () => {
+    mockClipboard(() => Promise.reject(new Error("denied")));
+    const copy = document.createElement("button");
+    copy.textContent = "Copy code";
+    const status = document.createElement("span");
+    wireCopyButton(copy, () => "x", { status, failOnButton: true });
+    copy.click();
+    await vi.waitFor(() => expect(copy.textContent).toBe(COPY_FAILED_SHORT));
+    expect(status.textContent).toBe(COPY_FAILED);
   });
 });

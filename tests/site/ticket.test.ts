@@ -8,6 +8,7 @@ import {
   RUNNING_LABEL,
   renderTicket,
   setTicketStamp,
+  type TicketStamp,
 } from "../../site/src/ticket";
 import { TOOLS } from "../../src/server/tools";
 
@@ -82,7 +83,9 @@ describe("renderTicket", () => {
     expect(button.textContent).toBe(RUN_LABEL);
     expect(button.disabled).toBe(true);
     expect(button.title).toBe(NO_RUN_NOTE);
-    expect(ticket.querySelector(".ticket__note")?.textContent).toBe(NO_RUN_NOTE);
+    const note = ticket.querySelector(".ticket__note");
+    expect(note?.textContent).toBe(NO_RUN_NOTE);
+    expect(button.getAttribute("aria-describedby")).toBe(note?.id);
   });
 
   it("enables the run button when onRun is given", () => {
@@ -170,6 +173,16 @@ describe("stamps", () => {
     setTicketStamp(ticket, undefined);
     expect(ticket.querySelector(".stamp")).toBeNull();
     expect(ticket.dataset.stamped).toBeUndefined();
+  });
+
+  it("shows no stamp for an unknown kind", () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const ticket = renderTicket({ tool: "ab_test_evaluate", input, stamp: { kind: "match" } });
+    setTicketStamp(ticket, { kind: "maybe" } as unknown as TicketStamp);
+    expect(ticket.querySelector(".stamp")).toBeNull();
+    expect(ticket.dataset.stamped).toBeUndefined();
+    expect(error).toHaveBeenCalledOnce();
+    error.mockRestore();
   });
 
   it("refuses elements that are not tickets", () => {

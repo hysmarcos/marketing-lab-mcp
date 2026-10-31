@@ -109,12 +109,25 @@ function renderStamp(stamp: TicketStamp): HTMLElement {
   return wrap;
 }
 
-/** Adds, replaces or (with `undefined`) removes the stamp on a ticket from `renderTicket`. */
+export function isStampKind(kind: unknown): kind is StampKind {
+  return typeof kind === "string" && Object.hasOwn(STAMP_TEXT, kind);
+}
+
+/**
+ * Adds, replaces or (with `undefined`) removes the stamp on a ticket from `renderTicket`. A stamp
+ * with an unknown kind (for example from a malformed transcript file) removes the stamp and logs
+ * an error instead of printing a blank one.
+ */
 export function setTicketStamp(ticket: HTMLElement, stamp: TicketStamp | undefined): void {
   const slot = ticket.querySelector<HTMLElement>(".ticket__stamp-slot");
   if (!slot) throw new Error("setTicketStamp needs an element created by renderTicket.");
-  slot.replaceChildren(...(stamp ? [renderStamp(stamp)] : []));
-  if (stamp) ticket.dataset.stamped = stamp.kind;
+  let valid = stamp;
+  if (stamp && !isStampKind(stamp.kind)) {
+    console.error(`Unknown stamp kind ${JSON.stringify(stamp.kind)}; showing no stamp.`);
+    valid = undefined;
+  }
+  slot.replaceChildren(...(valid ? [renderStamp(valid)] : []));
+  if (valid) ticket.dataset.stamped = valid.kind;
   else delete ticket.dataset.stamped;
 }
 
@@ -177,6 +190,7 @@ export function renderTicket(opts: TicketOptions): HTMLElement {
   } else {
     button.disabled = true;
     button.title = NO_RUN_NOTE;
+    button.setAttribute("aria-describedby", note.id);
     note.textContent = NO_RUN_NOTE;
   }
 

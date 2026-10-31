@@ -10,15 +10,19 @@ export function setupUrlBox(root: HTMLElement, url: string): void {
   const status = root.querySelector<HTMLElement>("[data-urlbox-status]");
   if (!value || !button || !status) throw new Error("The URL box markup is incomplete.");
 
+  if (!status.id) status.id = "urlbox-status";
   if (!url) {
     root.dataset.state = "empty";
     button.disabled = true;
+    // The disabled button explains itself: the status line says why and what to do instead.
+    button.setAttribute("aria-describedby", status.id);
     return;
   }
 
   root.dataset.state = "ready";
   value.textContent = url;
   button.disabled = false;
+  button.removeAttribute("aria-describedby");
   status.textContent = "Paste it into Claude as a custom connector. No account or key needed.";
-  wireCopyButton(button, () => url, status);
+  wireCopyButton(button, () => url, { status, failOnButton: false });
 }

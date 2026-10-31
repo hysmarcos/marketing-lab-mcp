@@ -1,0 +1,1699 @@
+{
+ "source": "Olist, Brazilian E-Commerce Public Dataset, Kaggle (https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)",
+ "license": "CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/). Attribution: Olist, Brazilian E-Commerce Public Dataset, Kaggle. Non-commercial use only; derived files must be shared under the same license.",
+ "as_of": "2018-09-01",
+ "rules": [
+  "Population: customer_unique_id with at least one delivered order purchased before as_of.",
+  "R = whole days from the date of the customer's last purchase to as_of. F = distinct delivered orders. M = sum of item prices (no freight, BRL) over those orders.",
+  "R score: pandas qcut into 5 bins of rank(method='first') of R ascending, then reversed, so R=5 is the most recent fifth. Ties are ranked in input order (customers sorted by customer_unique_id).",
+  "M score: pandas qcut into 5 bins of rank(method='first') of M ascending, so M=5 is the highest-spending fifth. Ties are ranked in input order.",
+  "F score: 1 order -> 1, 2 orders -> 3, 3 or more orders -> 5.",
+  "Segment, first match wins: champions (R>=4 and F>=3), loyal (F>=3), big_spenders_new (R>=4 and M=5), recent (R>=4), needs_attention (R=3), at_risk_high_value (R<=2 and M>=4), hibernating (otherwise).",
+  "State = customer_state of the customer's most recent order."
+ ],
+ "summary": [
+  {
+   "state": "AC",
+   "segment": "at_risk_high_value",
+   "customers": 20,
+   "revenue": 7116.14,
+   "avg_recency_days": 411.6,
+   "avg_orders": 1.0,
+   "avg_monetary": 355.81
+  },
+  {
+   "state": "AC",
+   "segment": "big_spenders_new",
+   "customers": 7,
+   "revenue": 3101.89,
+   "avg_recency_days": 67.1,
+   "avg_orders": 1.0,
+   "avg_monetary": 443.13
+  },
+  {
+   "state": "AC",
+   "segment": "champions",
+   "customers": 1,
+   "revenue": 124.89,
+   "avg_recency_days": 144.0,
+   "avg_orders": 2.0,
+   "avg_monetary": 124.89
+  },
+  {
+   "state": "AC",
+   "segment": "hibernating",
+   "customers": 22,
+   "revenue": 1146.06,
+   "avg_recency_days": 426.0,
+   "avg_orders": 1.0,
+   "avg_monetary": 52.09
+  },
+  {
+   "state": "AC",
+   "segment": "loyal",
+   "customers": 3,
+   "revenue": 1312.27,
+   "avg_recency_days": 413.3,
+   "avg_orders": 2.0,
+   "avg_monetary": 437.42
+  },
+  {
+   "state": "AC",
+   "segment": "needs_attention",
+   "customers": 15,
+   "revenue": 2174.17,
+   "avg_recency_days": 227.8,
+   "avg_orders": 1.0,
+   "avg_monetary": 144.94
+  },
+  {
+   "state": "AC",
+   "segment": "recent",
+   "customers": 8,
+   "revenue": 955.55,
+   "avg_recency_days": 70.4,
+   "avg_orders": 1.0,
+   "avg_monetary": 119.44
+  },
+  {
+   "state": "AL",
+   "segment": "at_risk_high_value",
+   "customers": 85,
+   "revenue": 33462.25,
+   "avg_recency_days": 404.4,
+   "avg_orders": 1.0,
+   "avg_monetary": 393.67
+  },
+  {
+   "state": "AL",
+   "segment": "big_spenders_new",
+   "customers": 34,
+   "revenue": 15790.41,
+   "avg_recency_days": 98.9,
+   "avg_orders": 1.0,
+   "avg_monetary": 464.42
+  },
+  {
+   "state": "AL",
+   "segment": "champions",
+   "customers": 3,
+   "revenue": 2346.68,
+   "avg_recency_days": 86.7,
+   "avg_orders": 2.0,
+   "avg_monetary": 782.23
+  },
+  {
+   "state": "AL",
+   "segment": "hibernating",
+   "customers": 94,
+   "revenue": 6037.89,
+   "avg_recency_days": 410.3,
+   "avg_orders": 1.0,
+   "avg_monetary": 64.23
+  },
+  {
+   "state": "AL",
+   "segment": "loyal",
+   "customers": 7,
+   "revenue": 2820.55,
+   "avg_recency_days": 365.4,
+   "avg_orders": 2.0,
+   "avg_monetary": 402.94
+  },
+  {
+   "state": "AL",
+   "segment": "needs_attention",
+   "customers": 69,
+   "revenue": 10685.35,
+   "avg_recency_days": 218.2,
+   "avg_orders": 1.0,
+   "avg_monetary": 154.86
+  },
+  {
+   "state": "AL",
+   "segment": "recent",
+   "customers": 95,
+   "revenue": 7712.59,
+   "avg_recency_days": 101.1,
+   "avg_orders": 1.0,
+   "avg_monetary": 81.19
+  },
+  {
+   "state": "AM",
+   "segment": "at_risk_high_value",
+   "customers": 24,
+   "revenue": 6445.26,
+   "avg_recency_days": 409.5,
+   "avg_orders": 1.0,
+   "avg_monetary": 268.55
+  },
+  {
+   "state": "AM",
+   "segment": "big_spenders_new",
+   "customers": 6,
+   "revenue": 2550.72,
+   "avg_recency_days": 89.7,
+   "avg_orders": 1.0,
+   "avg_monetary": 425.12
+  },
+  {
+   "state": "AM",
+   "segment": "champions",
+   "customers": 1,
+   "revenue": 132.8,
+   "avg_recency_days": 90.0,
+   "avg_orders": 2.0,
+   "avg_monetary": 132.8
+  },
+  {
+   "state": "AM",
+   "segment": "hibernating",
+   "customers": 38,
+   "revenue": 2007.37,
+   "avg_recency_days": 425.6,
+   "avg_orders": 1.0,
+   "avg_monetary": 52.83
+  },
+  {
+   "state": "AM",
+   "segment": "loyal",
+   "customers": 2,
+   "revenue": 1365.5,
+   "avg_recency_days": 377.5,
+   "avg_orders": 3.0,
+   "avg_monetary": 682.75
+  },
+  {
+   "state": "AM",
+   "segment": "needs_attention",
+   "customers": 26,
+   "revenue": 5928.13,
+   "avg_recency_days": 219.4,
+   "avg_orders": 1.0,
+   "avg_monetary": 228.0
+  },
+  {
+   "state": "AM",
+   "segment": "recent",
+   "customers": 43,
+   "revenue": 3726.06,
+   "avg_recency_days": 87.3,
+   "avg_orders": 1.0,
+   "avg_monetary": 86.65
+  },
+  {
+   "state": "AP",
+   "segment": "at_risk_high_value",
+   "customers": 12,
+   "revenue": 4250.13,
+   "avg_recency_days": 442.0,
+   "avg_orders": 1.0,
+   "avg_monetary": 354.18
+  },
+  {
+   "state": "AP",
+   "segment": "big_spenders_new",
+   "customers": 6,
+   "revenue": 2298.49,
+   "avg_recency_days": 123.8,
+   "avg_orders": 1.0,
+   "avg_monetary": 383.08
+  },
+  {
+   "state": "AP",
+   "segment": "hibernating",
+   "customers": 10,
+   "revenue": 625.42,
+   "avg_recency_days": 385.9,
+   "avg_orders": 1.0,
+   "avg_monetary": 62.54
+  },
+  {
+   "state": "AP",
+   "segment": "loyal",
+   "customers": 1,
+   "revenue": 469.7,
+   "avg_recency_days": 364.0,
+   "avg_orders": 2.0,
+   "avg_monetary": 469.7
+  },
+  {
+   "state": "AP",
+   "segment": "needs_attention",
+   "customers": 18,
+   "revenue": 4143.37,
+   "avg_recency_days": 232.4,
+   "avg_orders": 1.0,
+   "avg_monetary": 230.19
+  },
+  {
+   "state": "AP",
+   "segment": "recent",
+   "customers": 19,
+   "revenue": 1587.7,
+   "avg_recency_days": 96.5,
+   "avg_orders": 1.0,
+   "avg_monetary": 83.56
+  },
+  {
+   "state": "BA",
+   "segment": "at_risk_high_value",
+   "customers": 514,
+   "revenue": 145378.26,
+   "avg_recency_days": 403.1,
+   "avg_orders": 1.0,
+   "avg_monetary": 282.84
+  },
+  {
+   "state": "BA",
+   "segment": "big_spenders_new",
+   "customers": 262,
+   "revenue": 110528.3,
+   "avg_recency_days": 90.7,
+   "avg_orders": 1.0,
+   "avg_monetary": 421.86
+  },
+  {
+   "state": "BA",
+   "segment": "champions",
+   "customers": 36,
+   "revenue": 10545.67,
+   "avg_recency_days": 96.4,
+   "avg_orders": 2.278,
+   "avg_monetary": 292.94
+  },
+  {
+   "state": "BA",
+   "segment": "hibernating",
+   "customers": 768,
+   "revenue": 44222.81,
+   "avg_recency_days": 392.0,
+   "avg_orders": 1.0,
+   "avg_monetary": 57.58
+  },
+  {
+   "state": "BA",
+   "segment": "loyal",
+   "customers": 52,
+   "revenue": 14594.53,
+   "avg_recency_days": 327.6,
+   "avg_orders": 2.0,
+   "avg_monetary": 280.66
+  },
+  {
+   "state": "BA",
+   "segment": "needs_attention",
+   "customers": 595,
+   "revenue": 93674.44,
+   "avg_recency_days": 223.2,
+   "avg_orders": 1.0,
+   "avg_monetary": 157.44
+  },
+  {
+   "state": "BA",
+   "segment": "recent",
+   "customers": 929,
+   "revenue": 74410.14,
+   "avg_recency_days": 96.3,
+   "avg_orders": 1.0,
+   "avg_monetary": 80.1
+  },
+  {
+   "state": "CE",
+   "segment": "at_risk_high_value",
+   "customers": 255,
+   "revenue": 83139.17,
+   "avg_recency_days": 397.7,
+   "avg_orders": 1.0,
+   "avg_monetary": 326.04
+  },
+  {
+   "state": "CE",
+   "segment": "big_spenders_new",
+   "customers": 125,
+   "revenue": 56527.12,
+   "avg_recency_days": 102.2,
+   "avg_orders": 1.0,
+   "avg_monetary": 452.22
+  },
+  {
+   "state": "CE",
+   "segment": "champions",
+   "customers": 7,
+   "revenue": 2146.19,
+   "avg_recency_days": 80.4,
+   "avg_orders": 2.143,
+   "avg_monetary": 306.6
+  },
+  {
+   "state": "CE",
+   "segment": "hibernating",
+   "customers": 304,
+   "revenue": 17649.86,
+   "avg_recency_days": 393.7,
+   "avg_orders": 1.0,
+   "avg_monetary": 58.06
+  },
+  {
+   "state": "CE",
+   "segment": "loyal",
+   "customers": 14,
+   "revenue": 2675.44,
+   "avg_recency_days": 313.2,
+   "avg_orders": 2.071,
+   "avg_monetary": 191.1
+  },
+  {
+   "state": "CE",
+   "segment": "needs_attention",
+   "customers": 232,
+   "revenue": 31607.35,
+   "avg_recency_days": 223.2,
+   "avg_orders": 1.0,
+   "avg_monetary": 136.24
+  },
+  {
+   "state": "CE",
+   "segment": "recent",
+   "customers": 321,
+   "revenue": 26244.05,
+   "avg_recency_days": 98.2,
+   "avg_orders": 1.0,
+   "avg_monetary": 81.76
+  },
+  {
+   "state": "DF",
+   "segment": "at_risk_high_value",
+   "customers": 286,
+   "revenue": 88063.21,
+   "avg_recency_days": 383.1,
+   "avg_orders": 1.0,
+   "avg_monetary": 307.91
+  },
+  {
+   "state": "DF",
+   "segment": "big_spenders_new",
+   "customers": 166,
+   "revenue": 67861.62,
+   "avg_recency_days": 90.3,
+   "avg_orders": 1.0,
+   "avg_monetary": 408.8
+  },
+  {
+   "state": "DF",
+   "segment": "champions",
+   "customers": 21,
+   "revenue": 4033.81,
+   "avg_recency_days": 90.3,
+   "avg_orders": 2.048,
+   "avg_monetary": 192.09
+  },
+  {
+   "state": "DF",
+   "segment": "hibernating",
+   "customers": 441,
+   "revenue": 25219.36,
+   "avg_recency_days": 393.7,
+   "avg_orders": 1.0,
+   "avg_monetary": 57.19
+  },
+  {
+   "state": "DF",
+   "segment": "loyal",
+   "customers": 37,
+   "revenue": 7795.76,
+   "avg_recency_days": 303.2,
+   "avg_orders": 2.054,
+   "avg_monetary": 210.7
+  },
+  {
+   "state": "DF",
+   "segment": "needs_attention",
+   "customers": 400,
+   "revenue": 50848.83,
+   "avg_recency_days": 223.3,
+   "avg_orders": 1.0,
+   "avg_monetary": 127.12
+  },
+  {
+   "state": "DF",
+   "segment": "recent",
+   "customers": 665,
+   "revenue": 51875.12,
+   "avg_recency_days": 89.7,
+   "avg_orders": 1.0,
+   "avg_monetary": 78.01
+  },
+  {
+   "state": "ES",
+   "segment": "at_risk_high_value",
+   "customers": 307,
+   "revenue": 73118.04,
+   "avg_recency_days": 392.8,
+   "avg_orders": 1.0,
+   "avg_monetary": 238.17
+  },
+  {
+   "state": "ES",
+   "segment": "big_spenders_new",
+   "customers": 129,
+   "revenue": 63612.25,
+   "avg_recency_days": 88.8,
+   "avg_orders": 1.0,
+   "avg_monetary": 493.12
+  },
+  {
+   "state": "ES",
+   "segment": "champions",
+   "customers": 18,
+   "revenue": 6240.66,
+   "avg_recency_days": 88.3,
+   "avg_orders": 2.333,
+   "avg_monetary": 346.7
+  },
+  {
+   "state": "ES",
+   "segment": "hibernating",
+   "customers": 484,
+   "revenue": 27708.81,
+   "avg_recency_days": 390.2,
+   "avg_orders": 1.0,
+   "avg_monetary": 57.25
+  },
+  {
+   "state": "ES",
+   "segment": "loyal",
+   "customers": 39,
+   "revenue": 9168.56,
+   "avg_recency_days": 329.7,
+   "avg_orders": 2.128,
+   "avg_monetary": 235.09
+  },
+  {
+   "state": "ES",
+   "segment": "needs_attention",
+   "customers": 372,
+   "revenue": 44401.25,
+   "avg_recency_days": 221.4,
+   "avg_orders": 1.0,
+   "avg_monetary": 119.36
+  },
+  {
+   "state": "ES",
+   "segment": "recent",
+   "customers": 579,
+   "revenue": 44483.78,
+   "avg_recency_days": 97.1,
+   "avg_orders": 1.0,
+   "avg_monetary": 76.83
+  },
+  {
+   "state": "GO",
+   "segment": "at_risk_high_value",
+   "customers": 318,
+   "revenue": 89360.44,
+   "avg_recency_days": 398.5,
+   "avg_orders": 1.0,
+   "avg_monetary": 281.01
+  },
+  {
+   "state": "GO",
+   "segment": "big_spenders_new",
+   "customers": 150,
+   "revenue": 63513.16,
+   "avg_recency_days": 90.1,
+   "avg_orders": 1.0,
+   "avg_monetary": 423.42
+  },
+  {
+   "state": "GO",
+   "segment": "champions",
+   "customers": 29,
+   "revenue": 6893.89,
+   "avg_recency_days": 83.7,
+   "avg_orders": 2.138,
+   "avg_monetary": 237.72
+  },
+  {
+   "state": "GO",
+   "segment": "hibernating",
+   "customers": 434,
+   "revenue": 24741.21,
+   "avg_recency_days": 394.3,
+   "avg_orders": 1.0,
+   "avg_monetary": 57.01
+  },
+  {
+   "state": "GO",
+   "segment": "loyal",
+   "customers": 29,
+   "revenue": 6157.02,
+   "avg_recency_days": 325.2,
+   "avg_orders": 2.034,
+   "avg_monetary": 212.31
+  },
+  {
+   "state": "GO",
+   "segment": "needs_attention",
+   "customers": 411,
+   "revenue": 50370.95,
+   "avg_recency_days": 223.6,
+   "avg_orders": 1.0,
+   "avg_monetary": 122.56
+  },
+  {
+   "state": "GO",
+   "segment": "recent",
+   "customers": 522,
+   "revenue": 42087.02,
+   "avg_recency_days": 97.2,
+   "avg_orders": 1.0,
+   "avg_monetary": 80.63
+  },
+  {
+   "state": "MA",
+   "segment": "at_risk_high_value",
+   "customers": 138,
+   "revenue": 42832.29,
+   "avg_recency_days": 389.4,
+   "avg_orders": 1.0,
+   "avg_monetary": 310.38
+  },
+  {
+   "state": "MA",
+   "segment": "big_spenders_new",
+   "customers": 60,
+   "revenue": 24088.9,
+   "avg_recency_days": 97.8,
+   "avg_orders": 1.0,
+   "avg_monetary": 401.48
+  },
+  {
+   "state": "MA",
+   "segment": "champions",
+   "customers": 6,
+   "revenue": 2443.83,
+   "avg_recency_days": 110.3,
+   "avg_orders": 2.833,
+   "avg_monetary": 407.31
+  },
+  {
+   "state": "MA",
+   "segment": "hibernating",
+   "customers": 179,
+   "revenue": 10111.02,
+   "avg_recency_days": 412.5,
+   "avg_orders": 1.0,
+   "avg_monetary": 56.49
+  },
+  {
+   "state": "MA",
+   "segment": "loyal",
+   "customers": 9,
+   "revenue": 2334.96,
+   "avg_recency_days": 289.9,
+   "avg_orders": 2.0,
+   "avg_monetary": 259.44
+  },
+  {
+   "state": "MA",
+   "segment": "needs_attention",
+   "customers": 146,
+   "revenue": 22974.8,
+   "avg_recency_days": 224.1,
+   "avg_orders": 1.0,
+   "avg_monetary": 157.36
+  },
+  {
+   "state": "MA",
+   "segment": "recent",
+   "customers": 162,
+   "revenue": 12536.38,
+   "avg_recency_days": 97.8,
+   "avg_orders": 1.0,
+   "avg_monetary": 77.39
+  },
+  {
+   "state": "MG",
+   "segment": "at_risk_high_value",
+   "customers": 1669,
+   "revenue": 445320.25,
+   "avg_recency_days": 398.6,
+   "avg_orders": 1.0,
+   "avg_monetary": 266.82
+  },
+  {
+   "state": "MG",
+   "segment": "big_spenders_new",
+   "customers": 767,
+   "revenue": 309693.61,
+   "avg_recency_days": 94.8,
+   "avg_orders": 1.0,
+   "avg_monetary": 403.77
+  },
+  {
+   "state": "MG",
+   "segment": "champions",
+   "customers": 131,
+   "revenue": 32160.34,
+   "avg_recency_days": 94.1,
+   "avg_orders": 2.13,
+   "avg_monetary": 245.5
+  },
+  {
+   "state": "MG",
+   "segment": "hibernating",
+   "customers": 2742,
+   "revenue": 153066.61,
+   "avg_recency_days": 398.2,
+   "avg_orders": 1.0,
+   "avg_monetary": 55.82
+  },
+  {
+   "state": "MG",
+   "segment": "loyal",
+   "customers": 190,
+   "revenue": 50094.35,
+   "avg_recency_days": 320.7,
+   "avg_orders": 2.095,
+   "avg_monetary": 263.65
+  },
+  {
+   "state": "MG",
+   "segment": "needs_attention",
+   "customers": 2166,
+   "revenue": 291650.34,
+   "avg_recency_days": 222.3,
+   "avg_orders": 1.0,
+   "avg_monetary": 134.65
+  },
+  {
+   "state": "MG",
+   "segment": "recent",
+   "customers": 3330,
+   "revenue": 270257.31,
+   "avg_recency_days": 94.9,
+   "avg_orders": 1.0,
+   "avg_monetary": 81.16
+  },
+  {
+   "state": "MS",
+   "segment": "at_risk_high_value",
+   "customers": 103,
+   "revenue": 37994.02,
+   "avg_recency_days": 400.7,
+   "avg_orders": 1.0,
+   "avg_monetary": 368.87
+  },
+  {
+   "state": "MS",
+   "segment": "big_spenders_new",
+   "customers": 61,
+   "revenue": 27371.25,
+   "avg_recency_days": 93.1,
+   "avg_orders": 1.0,
+   "avg_monetary": 448.71
+  },
+  {
+   "state": "MS",
+   "segment": "champions",
+   "customers": 4,
+   "revenue": 298.69,
+   "avg_recency_days": 82.8,
+   "avg_orders": 2.0,
+   "avg_monetary": 74.67
+  },
+  {
+   "state": "MS",
+   "segment": "hibernating",
+   "customers": 135,
+   "revenue": 7735.09,
+   "avg_recency_days": 394.2,
+   "avg_orders": 1.0,
+   "avg_monetary": 57.3
+  },
+  {
+   "state": "MS",
+   "segment": "loyal",
+   "customers": 13,
+   "revenue": 3645.14,
+   "avg_recency_days": 352.8,
+   "avg_orders": 2.231,
+   "avg_monetary": 280.4
+  },
+  {
+   "state": "MS",
+   "segment": "needs_attention",
+   "customers": 161,
+   "revenue": 22540.79,
+   "avg_recency_days": 219.6,
+   "avg_orders": 1.0,
+   "avg_monetary": 140.0
+  },
+  {
+   "state": "MS",
+   "segment": "recent",
+   "customers": 203,
+   "revenue": 15675.09,
+   "avg_recency_days": 96.9,
+   "avg_orders": 1.0,
+   "avg_monetary": 77.22
+  },
+  {
+   "state": "MT",
+   "segment": "at_risk_high_value",
+   "customers": 155,
+   "revenue": 55019.48,
+   "avg_recency_days": 391.8,
+   "avg_orders": 1.0,
+   "avg_monetary": 354.96
+  },
+  {
+   "state": "MT",
+   "segment": "big_spenders_new",
+   "customers": 83,
+   "revenue": 36821.05,
+   "avg_recency_days": 103.2,
+   "avg_orders": 1.0,
+   "avg_monetary": 443.63
+  },
+  {
+   "state": "MT",
+   "segment": "champions",
+   "customers": 12,
+   "revenue": 2802.23,
+   "avg_recency_days": 115.2,
+   "avg_orders": 2.083,
+   "avg_monetary": 233.52
+  },
+  {
+   "state": "MT",
+   "segment": "hibernating",
+   "customers": 188,
+   "revenue": 10778.43,
+   "avg_recency_days": 395.6,
+   "avg_orders": 1.0,
+   "avg_monetary": 57.33
+  },
+  {
+   "state": "MT",
+   "segment": "loyal",
+   "customers": 17,
+   "revenue": 3863.79,
+   "avg_recency_days": 322.2,
+   "avg_orders": 2.059,
+   "avg_monetary": 227.28
+  },
+  {
+   "state": "MT",
+   "segment": "needs_attention",
+   "customers": 184,
+   "revenue": 25493.72,
+   "avg_recency_days": 222.1,
+   "avg_orders": 1.0,
+   "avg_monetary": 138.55
+  },
+  {
+   "state": "MT",
+   "segment": "recent",
+   "customers": 216,
+   "revenue": 17498.02,
+   "avg_recency_days": 92.0,
+   "avg_orders": 1.0,
+   "avg_monetary": 81.01
+  },
+  {
+   "state": "PA",
+   "segment": "at_risk_high_value",
+   "customers": 204,
+   "revenue": 67943.85,
+   "avg_recency_days": 409.5,
+   "avg_orders": 1.0,
+   "avg_monetary": 333.06
+  },
+  {
+   "state": "PA",
+   "segment": "big_spenders_new",
+   "customers": 86,
+   "revenue": 39191.97,
+   "avg_recency_days": 87.6,
+   "avg_orders": 1.0,
+   "avg_monetary": 455.72
+  },
+  {
+   "state": "PA",
+   "segment": "champions",
+   "customers": 7,
+   "revenue": 1324.67,
+   "avg_recency_days": 106.0,
+   "avg_orders": 2.0,
+   "avg_monetary": 189.24
+  },
+  {
+   "state": "PA",
+   "segment": "hibernating",
+   "customers": 220,
+   "revenue": 11736.65,
+   "avg_recency_days": 403.6,
+   "avg_orders": 1.0,
+   "avg_monetary": 53.35
+  },
+  {
+   "state": "PA",
+   "segment": "loyal",
+   "customers": 15,
+   "revenue": 3953.42,
+   "avg_recency_days": 334.9,
+   "avg_orders": 2.133,
+   "avg_monetary": 263.56
+  },
+  {
+   "state": "PA",
+   "segment": "needs_attention",
+   "customers": 176,
+   "revenue": 30992.29,
+   "avg_recency_days": 222.1,
+   "avg_orders": 1.0,
+   "avg_monetary": 176.09
+  },
+  {
+   "state": "PA",
+   "segment": "recent",
+   "customers": 214,
+   "revenue": 19327.74,
+   "avg_recency_days": 98.8,
+   "avg_orders": 1.0,
+   "avg_monetary": 90.32
+  },
+  {
+   "state": "PB",
+   "segment": "at_risk_high_value",
+   "customers": 95,
+   "revenue": 36627.16,
+   "avg_recency_days": 404.9,
+   "avg_orders": 1.0,
+   "avg_monetary": 385.55
+  },
+  {
+   "state": "PB",
+   "segment": "big_spenders_new",
+   "customers": 63,
+   "revenue": 37525.23,
+   "avg_recency_days": 81.5,
+   "avg_orders": 1.0,
+   "avg_monetary": 595.64
+  },
+  {
+   "state": "PB",
+   "segment": "champions",
+   "customers": 5,
+   "revenue": 2163.02,
+   "avg_recency_days": 103.2,
+   "avg_orders": 2.4,
+   "avg_monetary": 432.6
+  },
+  {
+   "state": "PB",
+   "segment": "hibernating",
+   "customers": 108,
+   "revenue": 6694.7,
+   "avg_recency_days": 415.0,
+   "avg_orders": 1.0,
+   "avg_monetary": 61.99
+  },
+  {
+   "state": "PB",
+   "segment": "loyal",
+   "customers": 5,
+   "revenue": 1395.45,
+   "avg_recency_days": 351.6,
+   "avg_orders": 2.2,
+   "avg_monetary": 279.09
+  },
+  {
+   "state": "PB",
+   "segment": "needs_attention",
+   "customers": 105,
+   "revenue": 17196.2,
+   "avg_recency_days": 224.8,
+   "avg_orders": 1.0,
+   "avg_monetary": 163.77
+  },
+  {
+   "state": "PB",
+   "segment": "recent",
+   "customers": 121,
+   "revenue": 10736.17,
+   "avg_recency_days": 90.2,
+   "avg_orders": 1.0,
+   "avg_monetary": 88.73
+  },
+  {
+   "state": "PE",
+   "segment": "at_risk_high_value",
+   "customers": 256,
+   "revenue": 78271.75,
+   "avg_recency_days": 383.6,
+   "avg_orders": 1.0,
+   "avg_monetary": 305.75
+  },
+  {
+   "state": "PE",
+   "segment": "big_spenders_new",
+   "customers": 156,
+   "revenue": 58625.64,
+   "avg_recency_days": 94.9,
+   "avg_orders": 1.0,
+   "avg_monetary": 375.81
+  },
+  {
+   "state": "PE",
+   "segment": "champions",
+   "customers": 13,
+   "revenue": 4432.19,
+   "avg_recency_days": 73.2,
+   "avg_orders": 2.692,
+   "avg_monetary": 340.94
+  },
+  {
+   "state": "PE",
+   "segment": "hibernating",
+   "customers": 355,
+   "revenue": 20989.62,
+   "avg_recency_days": 398.5,
+   "avg_orders": 1.0,
+   "avg_monetary": 59.13
+  },
+  {
+   "state": "PE",
+   "segment": "loyal",
+   "customers": 22,
+   "revenue": 5381.18,
+   "avg_recency_days": 344.8,
+   "avg_orders": 2.045,
+   "avg_monetary": 244.6
+  },
+  {
+   "state": "PE",
+   "segment": "needs_attention",
+   "customers": 307,
+   "revenue": 46336.42,
+   "avg_recency_days": 222.1,
+   "avg_orders": 1.0,
+   "avg_monetary": 150.93
+  },
+  {
+   "state": "PE",
+   "segment": "recent",
+   "customers": 438,
+   "revenue": 37641.19,
+   "avg_recency_days": 93.4,
+   "avg_orders": 1.0,
+   "avg_monetary": 85.94
+  },
+  {
+   "state": "PI",
+   "segment": "at_risk_high_value",
+   "customers": 90,
+   "revenue": 25211.57,
+   "avg_recency_days": 422.7,
+   "avg_orders": 1.0,
+   "avg_monetary": 280.13
+  },
+  {
+   "state": "PI",
+   "segment": "big_spenders_new",
+   "customers": 54,
+   "revenue": 25942.63,
+   "avg_recency_days": 100.4,
+   "avg_orders": 1.0,
+   "avg_monetary": 480.42
+  },
+  {
+   "state": "PI",
+   "segment": "champions",
+   "customers": 3,
+   "revenue": 746.87,
+   "avg_recency_days": 101.3,
+   "avg_orders": 2.333,
+   "avg_monetary": 248.96
+  },
+  {
+   "state": "PI",
+   "segment": "hibernating",
+   "customers": 98,
+   "revenue": 6016.41,
+   "avg_recency_days": 396.7,
+   "avg_orders": 1.0,
+   "avg_monetary": 61.39
+  },
+  {
+   "state": "PI",
+   "segment": "loyal",
+   "customers": 7,
+   "revenue": 2697.35,
+   "avg_recency_days": 294.7,
+   "avg_orders": 2.143,
+   "avg_monetary": 385.34
+  },
+  {
+   "state": "PI",
+   "segment": "needs_attention",
+   "customers": 98,
+   "revenue": 13384.73,
+   "avg_recency_days": 223.0,
+   "avg_orders": 1.0,
+   "avg_monetary": 136.58
+  },
+  {
+   "state": "PI",
+   "segment": "recent",
+   "customers": 114,
+   "revenue": 10721.44,
+   "avg_recency_days": 95.7,
+   "avg_orders": 1.0,
+   "avg_monetary": 94.05
+  },
+  {
+   "state": "PR",
+   "segment": "at_risk_high_value",
+   "customers": 665,
+   "revenue": 180975.95,
+   "avg_recency_days": 398.1,
+   "avg_orders": 1.0,
+   "avg_monetary": 272.14
+  },
+  {
+   "state": "PR",
+   "segment": "big_spenders_new",
+   "customers": 362,
+   "revenue": 151145.91,
+   "avg_recency_days": 95.1,
+   "avg_orders": 1.0,
+   "avg_monetary": 417.53
+  },
+  {
+   "state": "PR",
+   "segment": "champions",
+   "customers": 59,
+   "revenue": 14859.23,
+   "avg_recency_days": 84.0,
+   "avg_orders": 2.051,
+   "avg_monetary": 251.85
+  },
+  {
+   "state": "PR",
+   "segment": "hibernating",
+   "customers": 1173,
+   "revenue": 64413.43,
+   "avg_recency_days": 407.9,
+   "avg_orders": 1.0,
+   "avg_monetary": 54.91
+  },
+  {
+   "state": "PR",
+   "segment": "loyal",
+   "customers": 80,
+   "revenue": 19542.23,
+   "avg_recency_days": 342.2,
+   "avg_orders": 2.163,
+   "avg_monetary": 244.28
+  },
+  {
+   "state": "PR",
+   "segment": "needs_attention",
+   "customers": 944,
+   "revenue": 118488.08,
+   "avg_recency_days": 221.8,
+   "avg_orders": 1.0,
+   "avg_monetary": 125.52
+  },
+  {
+   "state": "PR",
+   "segment": "recent",
+   "customers": 1483,
+   "revenue": 115683.81,
+   "avg_recency_days": 93.5,
+   "avg_orders": 1.0,
+   "avg_monetary": 78.01
+  },
+  {
+   "state": "RJ",
+   "segment": "at_risk_high_value",
+   "customers": 2029,
+   "revenue": 563108.18,
+   "avg_recency_days": 393.7,
+   "avg_orders": 1.0,
+   "avg_monetary": 277.53
+  },
+  {
+   "state": "RJ",
+   "segment": "big_spenders_new",
+   "customers": 801,
+   "revenue": 323089.69,
+   "avg_recency_days": 95.1,
+   "avg_orders": 1.0,
+   "avg_monetary": 403.36
+  },
+  {
+   "state": "RJ",
+   "segment": "champions",
+   "customers": 167,
+   "revenue": 44797.94,
+   "avg_recency_days": 91.8,
+   "avg_orders": 2.144,
+   "avg_monetary": 268.25
+  },
+  {
+   "state": "RJ",
+   "segment": "hibernating",
+   "customers": 2989,
+   "revenue": 174408.09,
+   "avg_recency_days": 397.9,
+   "avg_orders": 1.0,
+   "avg_monetary": 58.35
+  },
+  {
+   "state": "RJ",
+   "segment": "loyal",
+   "customers": 224,
+   "revenue": 66048.08,
+   "avg_recency_days": 316.0,
+   "avg_orders": 2.098,
+   "avg_monetary": 294.86
+  },
+  {
+   "state": "RJ",
+   "segment": "needs_attention",
+   "customers": 2302,
+   "revenue": 313782.12,
+   "avg_recency_days": 221.7,
+   "avg_orders": 1.0,
+   "avg_monetary": 136.31
+  },
+  {
+   "state": "RJ",
+   "segment": "recent",
+   "customers": 3402,
+   "revenue": 274277.84,
+   "avg_recency_days": 94.1,
+   "avg_orders": 1.0,
+   "avg_monetary": 80.62
+  },
+  {
+   "state": "RN",
+   "segment": "at_risk_high_value",
+   "customers": 85,
+   "revenue": 25047.17,
+   "avg_recency_days": 411.9,
+   "avg_orders": 1.0,
+   "avg_monetary": 294.67
+  },
+  {
+   "state": "RN",
+   "segment": "big_spenders_new",
+   "customers": 46,
+   "revenue": 24567.91,
+   "avg_recency_days": 83.6,
+   "avg_orders": 1.0,
+   "avg_monetary": 534.09
+  },
+  {
+   "state": "RN",
+   "segment": "champions",
+   "customers": 1,
+   "revenue": 644.48,
+   "avg_recency_days": 62.0,
+   "avg_orders": 2.0,
+   "avg_monetary": 644.48
+  },
+  {
+   "state": "RN",
+   "segment": "hibernating",
+   "customers": 110,
+   "revenue": 6293.7,
+   "avg_recency_days": 393.5,
+   "avg_orders": 1.0,
+   "avg_monetary": 57.22
+  },
+  {
+   "state": "RN",
+   "segment": "loyal",
+   "customers": 9,
+   "revenue": 1970.84,
+   "avg_recency_days": 263.8,
+   "avg_orders": 2.0,
+   "avg_monetary": 218.98
+  },
+  {
+   "state": "RN",
+   "segment": "needs_attention",
+   "customers": 97,
+   "revenue": 13944.93,
+   "avg_recency_days": 224.8,
+   "avg_orders": 1.0,
+   "avg_monetary": 143.76
+  },
+  {
+   "state": "RN",
+   "segment": "recent",
+   "customers": 116,
+   "revenue": 9636.63,
+   "avg_recency_days": 98.4,
+   "avg_orders": 1.0,
+   "avg_monetary": 83.07
+  },
+  {
+   "state": "RO",
+   "segment": "at_risk_high_value",
+   "customers": 55,
+   "revenue": 17682.88,
+   "avg_recency_days": 393.7,
+   "avg_orders": 1.0,
+   "avg_monetary": 321.51
+  },
+  {
+   "state": "RO",
+   "segment": "big_spenders_new",
+   "customers": 23,
+   "revenue": 12651.92,
+   "avg_recency_days": 96.3,
+   "avg_orders": 1.0,
+   "avg_monetary": 550.08
+  },
+  {
+   "state": "RO",
+   "segment": "champions",
+   "customers": 3,
+   "revenue": 736.17,
+   "avg_recency_days": 132.7,
+   "avg_orders": 3.0,
+   "avg_monetary": 245.39
+  },
+  {
+   "state": "RO",
+   "segment": "hibernating",
+   "customers": 55,
+   "revenue": 2751.32,
+   "avg_recency_days": 437.7,
+   "avg_orders": 1.0,
+   "avg_monetary": 50.02
+  },
+  {
+   "state": "RO",
+   "segment": "loyal",
+   "customers": 7,
+   "revenue": 1708.39,
+   "avg_recency_days": 322.1,
+   "avg_orders": 2.0,
+   "avg_monetary": 244.06
+  },
+  {
+   "state": "RO",
+   "segment": "needs_attention",
+   "customers": 42,
+   "revenue": 5853.63,
+   "avg_recency_days": 223.5,
+   "avg_orders": 1.0,
+   "avg_monetary": 139.37
+  },
+  {
+   "state": "RO",
+   "segment": "recent",
+   "customers": 46,
+   "revenue": 4417.35,
+   "avg_recency_days": 89.9,
+   "avg_orders": 1.0,
+   "avg_monetary": 96.03
+  },
+  {
+   "state": "RR",
+   "segment": "at_risk_high_value",
+   "customers": 5,
+   "revenue": 908.01,
+   "avg_recency_days": 409.0,
+   "avg_orders": 1.0,
+   "avg_monetary": 181.6
+  },
+  {
+   "state": "RR",
+   "segment": "big_spenders_new",
+   "customers": 9,
+   "revenue": 3923.5,
+   "avg_recency_days": 98.1,
+   "avg_orders": 1.0,
+   "avg_monetary": 435.94
+  },
+  {
+   "state": "RR",
+   "segment": "champions",
+   "customers": 1,
+   "revenue": 595.9,
+   "avg_recency_days": 47.0,
+   "avg_orders": 2.0,
+   "avg_monetary": 595.9
+  },
+  {
+   "state": "RR",
+   "segment": "hibernating",
+   "customers": 14,
+   "revenue": 536.45,
+   "avg_recency_days": 457.1,
+   "avg_orders": 1.0,
+   "avg_monetary": 38.32
+  },
+  {
+   "state": "RR",
+   "segment": "needs_attention",
+   "customers": 5,
+   "revenue": 548.89,
+   "avg_recency_days": 196.4,
+   "avg_orders": 1.0,
+   "avg_monetary": 109.78
+  },
+  {
+   "state": "RR",
+   "segment": "recent",
+   "customers": 6,
+   "revenue": 544.72,
+   "avg_recency_days": 122.8,
+   "avg_orders": 1.0,
+   "avg_monetary": 90.79
+  },
+  {
+   "state": "RS",
+   "segment": "at_risk_high_value",
+   "customers": 841,
+   "revenue": 222306.36,
+   "avg_recency_days": 399.0,
+   "avg_orders": 1.0,
+   "avg_monetary": 264.34
+  },
+  {
+   "state": "RS",
+   "segment": "big_spenders_new",
+   "customers": 385,
+   "revenue": 144118.31,
+   "avg_recency_days": 98.6,
+   "avg_orders": 1.0,
+   "avg_monetary": 374.33
+  },
+  {
+   "state": "RS",
+   "segment": "champions",
+   "customers": 65,
+   "revenue": 22439.45,
+   "avg_recency_days": 97.5,
+   "avg_orders": 2.169,
+   "avg_monetary": 345.22
+  },
+  {
+   "state": "RS",
+   "segment": "hibernating",
+   "customers": 1368,
+   "revenue": 76398.23,
+   "avg_recency_days": 399.0,
+   "avg_orders": 1.0,
+   "avg_monetary": 55.85
+  },
+  {
+   "state": "RS",
+   "segment": "loyal",
+   "customers": 93,
+   "revenue": 20422.5,
+   "avg_recency_days": 325.7,
+   "avg_orders": 2.097,
+   "avg_monetary": 219.6
+  },
+  {
+   "state": "RS",
+   "segment": "needs_attention",
+   "customers": 958,
+   "revenue": 129008.38,
+   "avg_recency_days": 221.6,
+   "avg_orders": 1.0,
+   "avg_monetary": 134.66
+  },
+  {
+   "state": "RS",
+   "segment": "recent",
+   "customers": 1457,
+   "revenue": 114284.24,
+   "avg_recency_days": 95.5,
+   "avg_orders": 1.0,
+   "avg_monetary": 78.44
+  },
+  {
+   "state": "SC",
+   "segment": "at_risk_high_value",
+   "customers": 541,
+   "revenue": 146346.04,
+   "avg_recency_days": 401.1,
+   "avg_orders": 1.0,
+   "avg_monetary": 270.51
+  },
+  {
+   "state": "SC",
+   "segment": "big_spenders_new",
+   "customers": 258,
+   "revenue": 116517.02,
+   "avg_recency_days": 95.7,
+   "avg_orders": 1.0,
+   "avg_monetary": 451.62
+  },
+  {
+   "state": "SC",
+   "segment": "champions",
+   "customers": 38,
+   "revenue": 14800.64,
+   "avg_recency_days": 81.8,
+   "avg_orders": 2.079,
+   "avg_monetary": 389.49
+  },
+  {
+   "state": "SC",
+   "segment": "hibernating",
+   "customers": 864,
+   "revenue": 46252.91,
+   "avg_recency_days": 397.0,
+   "avg_orders": 1.0,
+   "avg_monetary": 53.53
+  },
+  {
+   "state": "SC",
+   "segment": "loyal",
+   "customers": 56,
+   "revenue": 14842.08,
+   "avg_recency_days": 300.5,
+   "avg_orders": 2.071,
+   "avg_monetary": 265.04
+  },
+  {
+   "state": "SC",
+   "segment": "needs_attention",
+   "customers": 738,
+   "revenue": 90300.68,
+   "avg_recency_days": 221.5,
+   "avg_orders": 1.0,
+   "avg_monetary": 122.36
+  },
+  {
+   "state": "SC",
+   "segment": "recent",
+   "customers": 951,
+   "revenue": 77650.76,
+   "avg_recency_days": 95.1,
+   "avg_orders": 1.0,
+   "avg_monetary": 81.65
+  },
+  {
+   "state": "SE",
+   "segment": "at_risk_high_value",
+   "customers": 69,
+   "revenue": 21308.09,
+   "avg_recency_days": 420.0,
+   "avg_orders": 1.0,
+   "avg_monetary": 308.81
+  },
+  {
+   "state": "SE",
+   "segment": "big_spenders_new",
+   "customers": 26,
+   "revenue": 9583.07,
+   "avg_recency_days": 69.2,
+   "avg_orders": 1.0,
+   "avg_monetary": 368.58
+  },
+  {
+   "state": "SE",
+   "segment": "champions",
+   "customers": 4,
+   "revenue": 1887.78,
+   "avg_recency_days": 52.8,
+   "avg_orders": 2.0,
+   "avg_monetary": 471.94
+  },
+  {
+   "state": "SE",
+   "segment": "hibernating",
+   "customers": 95,
+   "revenue": 5525.09,
+   "avg_recency_days": 411.7,
+   "avg_orders": 1.0,
+   "avg_monetary": 58.16
+  },
+  {
+   "state": "SE",
+   "segment": "loyal",
+   "customers": 4,
+   "revenue": 958.53,
+   "avg_recency_days": 367.0,
+   "avg_orders": 2.0,
+   "avg_monetary": 239.63
+  },
+  {
+   "state": "SE",
+   "segment": "needs_attention",
+   "customers": 52,
+   "revenue": 10518.9,
+   "avg_recency_days": 224.3,
+   "avg_orders": 1.0,
+   "avg_monetary": 202.29
+  },
+  {
+   "state": "SE",
+   "segment": "recent",
+   "customers": 78,
+   "revenue": 6968.82,
+   "avg_recency_days": 85.7,
+   "avg_orders": 1.0,
+   "avg_monetary": 89.34
+  },
+  {
+   "state": "SP",
+   "segment": "at_risk_high_value",
+   "customers": 4907,
+   "revenue": 1300260.25,
+   "avg_recency_days": 396.2,
+   "avg_orders": 1.0,
+   "avg_monetary": 264.98
+  },
+  {
+   "state": "SP",
+   "segment": "big_spenders_new",
+   "customers": 2749,
+   "revenue": 1072366.88,
+   "avg_recency_days": 93.9,
+   "avg_orders": 1.0,
+   "avg_monetary": 390.09
+  },
+  {
+   "state": "SP",
+   "segment": "champions",
+   "customers": 565,
+   "revenue": 144654.71,
+   "avg_recency_days": 90.7,
+   "avg_orders": 2.147,
+   "avg_monetary": 256.03
+  },
+  {
+   "state": "SP",
+   "segment": "hibernating",
+   "customers": 9221,
+   "revenue": 501952.92,
+   "avg_recency_days": 396.1,
+   "avg_orders": 1.0,
+   "avg_monetary": 54.44
+  },
+  {
+   "state": "SP",
+   "segment": "loyal",
+   "customers": 659,
+   "revenue": 157058.54,
+   "avg_recency_days": 321.4,
+   "avg_orders": 2.074,
+   "avg_monetary": 238.33
+  },
+  {
+   "state": "SP",
+   "segment": "needs_attention",
+   "customers": 7402,
+   "revenue": 894652.36,
+   "avg_recency_days": 222.9,
+   "avg_orders": 1.0,
+   "avg_monetary": 120.87
+  },
+  {
+   "state": "SP",
+   "segment": "recent",
+   "customers": 13647,
+   "revenue": 998601.98,
+   "avg_recency_days": 90.3,
+   "avg_orders": 1.0,
+   "avg_monetary": 73.17
+  },
+  {
+   "state": "TO",
+   "segment": "at_risk_high_value",
+   "customers": 56,
+   "revenue": 18350.04,
+   "avg_recency_days": 421.3,
+   "avg_orders": 1.0,
+   "avg_monetary": 327.68
+  },
+  {
+   "state": "TO",
+   "segment": "big_spenders_new",
+   "customers": 28,
+   "revenue": 13337.94,
+   "avg_recency_days": 100.6,
+   "avg_orders": 1.0,
+   "avg_monetary": 476.36
+  },
+  {
+   "state": "TO",
+   "segment": "champions",
+   "customers": 3,
+   "revenue": 1350.29,
+   "avg_recency_days": 133.0,
+   "avg_orders": 2.0,
+   "avg_monetary": 450.1
+  },
+  {
+   "state": "TO",
+   "segment": "hibernating",
+   "customers": 54,
+   "revenue": 3031.72,
+   "avg_recency_days": 395.5,
+   "avg_orders": 1.0,
+   "avg_monetary": 56.14
+  },
+  {
+   "state": "TO",
+   "segment": "loyal",
+   "customers": 4,
+   "revenue": 529.57,
+   "avg_recency_days": 332.2,
+   "avg_orders": 2.0,
+   "avg_monetary": 132.39
+  },
+  {
+   "state": "TO",
+   "segment": "needs_attention",
+   "customers": 49,
+   "revenue": 6052.19,
+   "avg_recency_days": 220.7,
+   "avg_orders": 1.0,
+   "avg_monetary": 123.51
+  },
+  {
+   "state": "TO",
+   "segment": "recent",
+   "customers": 73,
+   "revenue": 5750.76,
+   "avg_recency_days": 90.7,
+   "avg_orders": 1.0,
+   "avg_monetary": 78.78
+  }
+ ]
+}

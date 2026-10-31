@@ -1,15 +1,16 @@
-"""Entry point: `uv run python -m prep <name>` runs prep/<name>.py."""
+"""Entry point: `uv run python -m prep <name> [<name> ...]` runs prep/<name>.py for each name."""
 
 import importlib
 import sys
 
 
 def main(argv: list[str]) -> int:
-    if len(argv) != 2:
-        print("usage: python -m prep <name>", file=sys.stderr)
+    if len(argv) < 2:
+        print("usage: python -m prep <name> [<name> ...]", file=sys.stderr)
         return 2
-    module = importlib.import_module(f"prep.{argv[1]}")
-    module.main()
+    for name in argv[1:]:
+        module = importlib.import_module(f"prep.{name}")
+        module.main()
     return 0
 
 

@@ -1,0 +1,405 @@
+{
+ "as_of": "2018-09-01",
+ "customers": [
+  {
+   "customer_id": "C001",
+   "last_order_date": "2018-03-14",
+   "orders": 1,
+   "revenue": 70.0,
+   "r_score": 1,
+   "f_score": 1,
+   "m_score": 1,
+   "segment": "hibernating"
+  },
+  {
+   "customer_id": "C002",
+   "last_order_date": "2018-05-07",
+   "orders": 1,
+   "revenue": 150.0,
+   "r_score": 3,
+   "f_score": 1,
+   "m_score": 4,
+   "segment": "needs_attention"
+  },
+  {
+   "customer_id": "C003",
+   "last_order_date": "2018-04-28",
+   "orders": 2,
+   "revenue": 80.0,
+   "r_score": 3,
+   "f_score": 3,
+   "m_score": 2,
+   "segment": "loyal"
+  },
+  {
+   "customer_id": "C004",
+   "last_order_date": "2018-03-23",
+   "orders": 1,
+   "revenue": 140.0,
+   "r_score": 1,
+   "f_score": 1,
+   "m_score": 4,
+   "segment": "at_risk_high_value"
+  },
+  {
+   "customer_id": "C005",
+   "last_order_date": "2018-05-16",
+   "orders": 1,
+   "revenue": 40.0,
+   "r_score": 3,
+   "f_score": 1,
+   "m_score": 1,
+   "segment": "needs_attention"
+  },
+  {
+   "customer_id": "C006",
+   "last_order_date": "2018-04-10",
+   "orders": 2,
+   "revenue": 70.0,
+   "r_score": 2,
+   "f_score": 3,
+   "m_score": 2,
+   "segment": "loyal"
+  },
+  {
+   "customer_id": "C007",
+   "last_order_date": "2018-04-01",
+   "orders": 2,
+   "revenue": 100.0,
+   "r_score": 2,
+   "f_score": 3,
+   "m_score": 3,
+   "segment": "loyal"
+  },
+  {
+   "customer_id": "C008",
+   "last_order_date": "2018-07-18",
+   "orders": 4,
+   "revenue": 270.0,
+   "r_score": 5,
+   "f_score": 5,
+   "m_score": 5,
+   "segment": "champions"
+  },
+  {
+   "customer_id": "C009",
+   "last_order_date": "2018-08-14",
+   "orders": 2,
+   "revenue": 340.0,
+   "r_score": 5,
+   "f_score": 3,
+   "m_score": 5,
+   "segment": "champions"
+  },
+  {
+   "customer_id": "C010",
+   "last_order_date": "2018-06-30",
+   "orders": 2,
+   "revenue": 40.0,
+   "r_score": 4,
+   "f_score": 3,
+   "m_score": 1,
+   "segment": "champions"
+  },
+  {
+   "customer_id": "C011",
+   "last_order_date": "2018-07-09",
+   "orders": 2,
+   "revenue": 60.0,
+   "r_score": 5,
+   "f_score": 3,
+   "m_score": 1,
+   "segment": "champions"
+  },
+  {
+   "customer_id": "C012",
+   "last_order_date": "2018-03-23",
+   "orders": 1,
+   "revenue": 220.0,
+   "r_score": 1,
+   "f_score": 1,
+   "m_score": 4,
+   "segment": "at_risk_high_value"
+  },
+  {
+   "customer_id": "C013",
+   "last_order_date": "2018-03-14",
+   "orders": 1,
+   "revenue": 20.0,
+   "r_score": 1,
+   "f_score": 1,
+   "m_score": 1,
+   "segment": "hibernating"
+  },
+  {
+   "customer_id": "C014",
+   "last_order_date": "2018-08-23",
+   "orders": 1,
+   "revenue": 80.0,
+   "r_score": 5,
+   "f_score": 1,
+   "m_score": 2,
+   "segment": "recent"
+  },
+  {
+   "customer_id": "C015",
+   "last_order_date": "2018-06-03",
+   "orders": 2,
+   "revenue": 110.0,
+   "r_score": 4,
+   "f_score": 3,
+   "m_score": 3,
+   "segment": "champions"
+  },
+  {
+   "customer_id": "C016",
+   "last_order_date": "2018-04-01",
+   "orders": 1,
+   "revenue": 380.0,
+   "r_score": 2,
+   "f_score": 1,
+   "m_score": 5,
+   "segment": "at_risk_high_value"
+  },
+  {
+   "customer_id": "C017",
+   "last_order_date": "2018-08-05",
+   "orders": 1,
+   "revenue": 230.0,
+   "r_score": 5,
+   "f_score": 1,
+   "m_score": 5,
+   "segment": "big_spenders_new"
+  },
+  {
+   "customer_id": "C018",
+   "last_order_date": "2018-04-10",
+   "orders": 1,
+   "revenue": 90.0,
+   "r_score": 2,
+   "f_score": 1,
+   "m_score": 2,
+   "segment": "hibernating"
+  },
+  {
+   "customer_id": "C019",
+   "last_order_date": "2018-08-05",
+   "orders": 3,
+   "revenue": 90.0,
+   "r_score": 5,
+   "f_score": 5,
+   "m_score": 2,
+   "segment": "champions"
+  },
+  {
+   "customer_id": "C020",
+   "last_order_date": "2018-06-03",
+   "orders": 1,
+   "revenue": 100.0,
+   "r_score": 4,
+   "f_score": 1,
+   "m_score": 3,
+   "segment": "recent"
+  },
+  {
+   "customer_id": "C021",
+   "last_order_date": "2018-04-01",
+   "orders": 1,
+   "revenue": 480.0,
+   "r_score": 2,
+   "f_score": 1,
+   "m_score": 5,
+   "segment": "at_risk_high_value"
+  },
+  {
+   "customer_id": "C022",
+   "last_order_date": "2018-06-30",
+   "orders": 3,
+   "revenue": 80.0,
+   "r_score": 4,
+   "f_score": 5,
+   "m_score": 2,
+   "segment": "champions"
+  },
+  {
+   "customer_id": "C023",
+   "last_order_date": "2018-06-30",
+   "orders": 2,
+   "revenue": 90.0,
+   "r_score": 4,
+   "f_score": 3,
+   "m_score": 2,
+   "segment": "champions"
+  },
+  {
+   "customer_id": "C024",
+   "last_order_date": "2018-07-09",
+   "orders": 3,
+   "revenue": 170.0,
+   "r_score": 5,
+   "f_score": 5,
+   "m_score": 4,
+   "segment": "champions"
+  },
+  {
+   "customer_id": "C025",
+   "last_order_date": "2018-04-19",
+   "orders": 2,
+   "revenue": 110.0,
+   "r_score": 2,
+   "f_score": 3,
+   "m_score": 3,
+   "segment": "loyal"
+  },
+  {
+   "customer_id": "C026",
+   "last_order_date": "2018-07-09",
+   "orders": 3,
+   "revenue": 100.0,
+   "r_score": 5,
+   "f_score": 5,
+   "m_score": 3,
+   "segment": "champions"
+  },
+  {
+   "customer_id": "C027",
+   "last_order_date": "2018-03-05",
+   "orders": 1,
+   "revenue": 40.0,
+   "r_score": 1,
+   "f_score": 1,
+   "m_score": 1,
+   "segment": "hibernating"
+  },
+  {
+   "customer_id": "C028",
+   "last_order_date": "2018-06-12",
+   "orders": 2,
+   "revenue": 120.0,
+   "r_score": 4,
+   "f_score": 3,
+   "m_score": 3,
+   "segment": "champions"
+  },
+  {
+   "customer_id": "C029",
+   "last_order_date": "2018-06-03",
+   "orders": 2,
+   "revenue": 80.0,
+   "r_score": 4,
+   "f_score": 3,
+   "m_score": 2,
+   "segment": "champions"
+  },
+  {
+   "customer_id": "C030",
+   "last_order_date": "2018-05-25",
+   "orders": 3,
+   "revenue": 350.0,
+   "r_score": 3,
+   "f_score": 5,
+   "m_score": 5,
+   "segment": "loyal"
+  },
+  {
+   "customer_id": "C031",
+   "last_order_date": "2018-05-16",
+   "orders": 1,
+   "revenue": 220.0,
+   "r_score": 3,
+   "f_score": 1,
+   "m_score": 4,
+   "segment": "needs_attention"
+  },
+  {
+   "customer_id": "C032",
+   "last_order_date": "2018-05-16",
+   "orders": 2,
+   "revenue": 120.0,
+   "r_score": 3,
+   "f_score": 3,
+   "m_score": 3,
+   "segment": "loyal"
+  },
+  {
+   "customer_id": "C033",
+   "last_order_date": "2018-05-25",
+   "orders": 1,
+   "revenue": 220.0,
+   "r_score": 3,
+   "f_score": 1,
+   "m_score": 5,
+   "segment": "needs_attention"
+  },
+  {
+   "customer_id": "C034",
+   "last_order_date": "2018-03-05",
+   "orders": 1,
+   "revenue": 90.0,
+   "r_score": 1,
+   "f_score": 1,
+   "m_score": 3,
+   "segment": "hibernating"
+  },
+  {
+   "customer_id": "C035",
+   "last_order_date": "2018-04-01",
+   "orders": 1,
+   "revenue": 310.0,
+   "r_score": 1,
+   "f_score": 1,
+   "m_score": 5,
+   "segment": "at_risk_high_value"
+  },
+  {
+   "customer_id": "C036",
+   "last_order_date": "2018-04-10",
+   "orders": 1,
+   "revenue": 120.0,
+   "r_score": 2,
+   "f_score": 1,
+   "m_score": 4,
+   "segment": "at_risk_high_value"
+  },
+  {
+   "customer_id": "C037",
+   "last_order_date": "2018-04-19",
+   "orders": 3,
+   "revenue": 210.0,
+   "r_score": 2,
+   "f_score": 5,
+   "m_score": 4,
+   "segment": "loyal"
+  },
+  {
+   "customer_id": "C038",
+   "last_order_date": "2018-05-07",
+   "orders": 1,
+   "revenue": 40.0,
+   "r_score": 3,
+   "f_score": 1,
+   "m_score": 1,
+   "segment": "needs_attention"
+  },
+  {
+   "customer_id": "C039",
+   "last_order_date": "2018-06-30",
+   "orders": 4,
+   "revenue": 170.0,
+   "r_score": 4,
+   "f_score": 5,
+   "m_score": 4,
+   "segment": "champions"
+  },
+  {
+   "customer_id": "C040",
+   "last_order_date": "2018-03-05",
+   "orders": 2,
+   "revenue": 30.0,
+   "r_score": 1,
+   "f_score": 3,
+   "m_score": 1,
+   "segment": "loyal"
+  }
+ ]
+}

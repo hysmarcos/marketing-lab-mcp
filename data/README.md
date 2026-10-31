@@ -45,3 +45,82 @@ File: `mmm_results.json` (about 140 KB). Used by the `budget_simulate` and `budg
   again from the source project and say which commit it came from. `tests/fixtures/simulator_cases.json`
   (a reduced results object plus four plans with the values the Python model gives) is copied from
   the same commit; the tests use it to check that the TypeScript port matches Python.
+
+## Olist e-commerce and marketing funnel
+
+Files: `olist_sales.json` (about 300 KB), `olist_rfm.json` (about 35 KB) and `olist_funnel.json`
+(about 38 KB). They feed the sales, RFM and funnel tools. `tests/fixtures/rfm_parity.json` is a
+test file made by the same script (see "RFM rules" below).
+
+- **Sources:** both are public datasets on Kaggle, published by Olist, a Brazilian marketplace.
+  - Olist, "Brazilian E-Commerce Public Dataset", Kaggle:
+    <https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce> (about 45 MB zip). It feeds
+    `olist_sales.json` and `olist_rfm.json`.
+  - Olist, "Marketing Funnel by Olist", Kaggle:
+    <https://www.kaggle.com/datasets/olistbr/marketing-funnel-olist> (about 0.3 MB zip). It feeds
+    `olist_funnel.json`.
+- **License:** CC BY-NC-SA 4.0, <https://creativecommons.org/licenses/by-nc-sa/4.0/>. Attribution:
+  "Olist, Brazilian E-Commerce Public Dataset, Kaggle" (for the funnel file: "Olist, Marketing
+  Funnel by Olist, Kaggle"). Every file has `source` and `license` fields with this text. The use is
+  **non-commercial**, and these three files are derived from the data, so **ShareAlike** applies:
+  keep them under CC BY-NC-SA 4.0 if you copy or change them. The code of this repository is MIT;
+  only these derived data files carry the Olist license.
+- **Rebuild:** `uv run python -m prep olist funnel`. It downloads both zips to `.cache/raw/` once
+  (anonymous GET, no account needed), reads the CSV files straight from the zips, and writes the
+  three summaries and `tests/fixtures/rfm_parity.json`.
+
+### `olist_sales.json`
+
+A columnar cube: `months`, `categories` and `states` are lists, and `rows` holds parallel arrays
+(`m`, `c`, `s` are indexes into those lists, then `orders`, `items`, `revenue`, `review_sum`,
+`review_n`, `late_n`). One row per month, category and state that has sales.
+
+- Only **delivered** orders, bought from 2017-01 to 2018-08 (96,211 orders). Earlier months have
+  too few orders.
+- `revenue` is the sum of item `price` in BRL, without freight.
+- The category is `product_category_name_english`. A product without a name or without a
+  translation is `unknown` (1,557 of 109,880 items). An order with items in two categories counts
+  once in each, so the sum of `orders` over all rows (97,007) is larger than the number of orders.
+- `review_sum` and `review_n` use the order's latest review by `review_answer_timestamp`. Orders
+  with no review are not in `review_n`.
+- `late_n` counts orders delivered after the estimated delivery date (`order_delivered_customer_date`
+  later than `order_estimated_delivery_date`). Orders with no delivery date are not late.
+- The file keeps all 72 categories, so no category was rolled into `other` (that rule was ready for
+  a file over 900 KB, but the cube is far smaller).
+
+### `olist_rfm.json`
+
+`summary` has one row per `state` and `segment` with `customers`, `revenue`, `avg_recency_days`,
+`avg_orders` and `avg_monetary`, for 93,358 customers (`customer_unique_id`) with at least one
+delivered order before `as_of`. The state is the one of the customer's most recent order.
+
+#### RFM rules
+
+`as_of` is `2018-09-01`, the day after the last full month in the data. The same rules are in the
+`rules` field of the file.
+
+- **R** is the number of whole days from the date of the customer's last purchase to `as_of`.
+  **F** is the number of distinct delivered orders. **M** is the sum of item prices (no freight).
+- **R score** and **M score** are quintiles from 1 to 5: `pd.qcut` on `rank(method="first")`.
+  R is ranked with the smallest number of days first, and the scores are reversed so that R=5 is the
+  most recent fifth. M=5 is the highest-spending fifth. Ties are broken by input order (customers
+  sorted by `customer_unique_id`).
+- **F score:** 1 order is 1, 2 orders is 3, 3 or more orders is 5.
+- **Segment**, the first match wins: `champions` (R 4 or more and F 3 or more), `loyal` (F 3 or
+  more), `big_spenders_new` (R 4 or more and M 5), `recent` (R 4 or more), `needs_attention` (R 3),
+  `at_risk_high_value` (R 2 or less and M 4 or more), `hibernating` (everything else). Note that F
+  is 3 for two orders, so a customer with two orders already counts as `loyal`.
+- `tests/fixtures/rfm_parity.json` has 40 synthetic customers (seed 7) with their R, F, M scores
+  and segment from the Python function. It has ties in recency and in revenue on purpose, and all
+  seven segments. The TypeScript port is tested against it.
+
+### `olist_funnel.json`
+
+- `mql`: the 8,000 marketing qualified leads counted by month of first contact (2017-06 to
+  2018-05) and by `origin`. `counts[month][origin]` follows the order of `months` and `origins`.
+- `deals`: columns for the 842 closed deals, joined to their lead by `mql_id`: `origin`,
+  `contact_month`, `segment` (the seller's `business_segment`) and `days_to_close` (days from
+  first contact to the won date, using calendar days). One deal in the source was won two days
+  before its recorded first contact, so its value is -2; it is kept as is.
+- A blank `origin` (60 leads) or a blank segment is stored as `unknown`. The source already has an
+  `unknown` origin, so the two are merged: there are 10 origins, not 11.

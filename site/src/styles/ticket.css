@@ -29,17 +29,17 @@
   }
 }
 
+/* No clipping on the sheet: the stub lifts on hover, so each part rounds its own outer corners. */
 .ticket__sheet {
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--stub-w);
-  border-radius: 6px;
-  overflow: hidden;
 }
 
 /* Body: the recording ------------------------------------------------------------------------ */
 .ticket__body {
   min-width: 0;
   padding: 1.125rem 1.5rem 1.25rem 1.25rem;
+  border-radius: 6px 0 0 6px;
   background: color-mix(in srgb, var(--ink-a) 10%, var(--ticket-ground));
 }
 
@@ -100,9 +100,21 @@
   justify-content: center;
   gap: 0.625rem;
   padding: 1.25rem 0.875rem;
+  border-radius: 0 6px 6px 0;
   background: var(--ink-b);
   color: var(--on-ink-b);
   text-align: center;
+}
+
+/* The stub is the live action: on hover it starts to peel away along its tear line. */
+@media (prefers-reduced-motion: no-preference) and (hover: hover) {
+  .ticket__stub {
+    transition: transform 240ms var(--ease-out);
+  }
+
+  .ticket:not([aria-busy="true"]) .ticket__stub:has(.ticket__run:not(:disabled)):hover {
+    transform: translate(2px, -3px) rotate(0.8deg);
+  }
 }
 
 /* Punched holes along the tear line. */
@@ -136,6 +148,8 @@
 }
 
 .ticket__run {
+  transition-property: background-color, color, scale;
+  transition-duration: 160ms;
   padding: 0.5rem 0.875rem;
   border: var(--rule-width) solid currentColor;
   border-radius: 4px;
@@ -278,9 +292,11 @@
 
   .ticket__body {
     padding-right: 1.25rem;
+    border-radius: 6px 6px 0 0;
   }
 
   .ticket__stub {
+    border-radius: 0 0 6px 6px;
     align-items: flex-start;
     padding: 1.125rem 1.25rem 1rem;
     text-align: left;

@@ -1,13 +1,13 @@
 // @vitest-environment happy-dom
 import { Client } from "@modelcontextprotocol/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { pickTool, resetPicker } from "../../site/src/picker";
 import {
   LIVE_FALLBACK_NOTICE,
   LOG_MARKERS,
   mountPlayground,
   RUN_LABELS,
 } from "../../site/src/playground";
-import { pickTool, resetPicker } from "../../site/src/picker";
 import { sharedRunner } from "../../site/src/session";
 import worker from "../../src/runtimes/worker";
 

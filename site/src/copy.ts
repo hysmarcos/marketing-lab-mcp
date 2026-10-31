@@ -12,6 +12,18 @@ export interface CopyFeedback {
 }
 
 /**
+ * Puts `text` on the button in its own span, so the new label can fade in (styles in base.css).
+ * `copied` adds the check mark. The button keeps its width while the label is swapped.
+ */
+function setLabel(button: HTMLButtonElement, text: string, copied: boolean): void {
+  const span = document.createElement("span");
+  span.className = "copy-label";
+  span.textContent = text;
+  button.replaceChildren(span);
+  button.toggleAttribute("data-copied", copied);
+}
+
+/**
  * Makes `button` copy `getText()` to the clipboard. The label switches to "Copied" for two
  * seconds and the status line announces it; then both go back to what they said before. If the
  * browser refuses, the status line says what to do instead.
@@ -21,29 +33,30 @@ export function wireCopyButton(
   getText: () => string,
   { status, failOnButton = !status }: CopyFeedback = {},
 ): void {
-  const label = button.textContent ?? "";
+  const label = (button.textContent ?? "").trim();
   const statusText = status?.textContent ?? "";
   let timer: ReturnType<typeof setTimeout> | undefined;
   button.addEventListener("click", async () => {
     clearTimeout(timer);
     try {
       await navigator.clipboard.writeText(getText());
-      button.textContent = COPIED_LABEL;
+      if (button.offsetWidth > 0) button.style.minWidth = `${button.offsetWidth}px`;
+      setLabel(button, COPIED_LABEL, true);
       if (status) status.textContent = COPIED_STATUS;
       timer = setTimeout(() => {
-        button.textContent = label;
+        setLabel(button, label, false);
         if (status) status.textContent = statusText;
       }, COPIED_MS);
     } catch {
       if (status) status.textContent = COPY_FAILED;
       if (failOnButton) {
-        button.textContent = COPY_FAILED_SHORT;
+        setLabel(button, COPY_FAILED_SHORT, false);
         timer = setTimeout(() => {
-          button.textContent = label;
+          setLabel(button, label, false);
         }, COPIED_MS);
       } else {
         // A success just before may have left "Copied" on the button; its timer was cleared.
-        button.textContent = label;
+        setLabel(button, label, false);
       }
     }
   });

@@ -3,6 +3,7 @@ import "./styles/playground.css";
 import type { CallToolResult, Tool } from "@modelcontextprotocol/client";
 import { TOOLS } from "../../src/server/tools";
 import { LIVE_URL } from "./config";
+import { countUp } from "./countup";
 import {
   argsFromFields,
   buildFields,
@@ -23,9 +24,11 @@ import {
   type Session,
   type Traffic,
 } from "./mcp";
+import { motionAllowed } from "./motion";
 import { onPickTool } from "./picker";
 import { renderResult } from "./render";
 import { provideRunner, RUN_LABELS, setSharedMode } from "./session";
+import { attachTabInk } from "./tab-ink";
 import { renderTicket, setTicketRunLabel } from "./ticket";
 
 export { RUN_LABELS };
@@ -265,6 +268,7 @@ export async function mountPlayground(
   root.replaceChildren(pg);
 
   // Tabs ------------------------------------------------------------------------------------------
+  const tabInk = attachTabInk(tablist);
   function selectTab(index: number, focus: boolean): void {
     tabs.forEach(([tab, panel], i) => {
       const selected = i === index;
@@ -273,6 +277,7 @@ export async function mountPlayground(
       panel.hidden = !selected;
       if (selected && focus) tab.focus();
     });
+    tabInk.update();
   }
   tabs.forEach(([tab], i) => {
     tab.addEventListener("click", () => selectTab(i, false));
@@ -327,6 +332,9 @@ export async function mountPlayground(
       pending.delete(json.id);
     }
     const item = el("li", `msg msg--${message.direction}`);
+    // New lines slide in from their side (out from the client, in from the server) when the log
+    // is on screen.
+    if (!messagesPanel.hidden && motionAllowed()) item.classList.add("is-new");
     const details = el("details", "msg__details");
     const summary = el("summary", "msg__summary");
     summary.append(el("span", "msg__dir", message.direction), el("span", "msg__what", what));
@@ -494,7 +502,17 @@ export async function mountPlayground(
       return;
     }
     const structured = isRecord(result.structuredContent) ? result.structuredContent : {};
-    resultSlot.replaceChildren(renderResult(name, structured, text));
+    const view = renderResult(name, structured, text);
+    resultSlot.replaceChildren(view);
+    // The comparison bars grow from zero and their numbers count up, so the new answer reads as
+    // new. With reduced motion they are simply there.
+    if (motionAllowed()) {
+      view.dataset.enter = "";
+      view.querySelectorAll<HTMLElement>(".bars__row").forEach((row, i) => {
+        row.style.setProperty("--i", String(i));
+      });
+      for (const value of view.querySelectorAll<HTMLElement>(".bars__value")) countUp(value);
+    }
     // The summary is printed under the ticket; screen readers also hear it with the status.
     status.replaceChildren(
       `${name} ran ${where(state.mode)}.`,

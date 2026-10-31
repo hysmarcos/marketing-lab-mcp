@@ -3,6 +3,7 @@ import "./styles/transcripts.css";
 import type { CallToolResult } from "@modelcontextprotocol/client";
 import { renderMarkdown } from "./markdown";
 import { onSharedModeChange, RUN_LABELS, sharedMode, sharedRunner } from "./session";
+import { attachTabInk } from "./tab-ink";
 import { renderTicket, setTicketRunLabel, setTicketStamp, type TicketStamp } from "./ticket";
 import {
   compareOutputs,
@@ -267,6 +268,7 @@ export function renderTranscriptTabs(transcripts: Transcript[]): HTMLElement {
     tablist.append(tab);
   }
 
+  const ink = attachTabInk(tablist);
   function select(index: number, focus: boolean): void {
     tabs.forEach((tab, i) => {
       const selected = i === index;
@@ -275,6 +277,7 @@ export function renderTranscriptTabs(transcripts: Transcript[]): HTMLElement {
       (panels[i] as HTMLElement).hidden = !selected;
       if (selected && focus) tab.focus();
     });
+    ink.update();
   }
   tabs.forEach((tab, i) => {
     tab.addEventListener("click", () => select(i, false));

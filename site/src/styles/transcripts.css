@@ -154,26 +154,26 @@
 
 .tr__tab {
   margin-bottom: -1px;
-  padding: 0.5rem 0.875rem;
-  border: 1px solid transparent;
-  border-bottom: 0;
+  padding: 0.625rem 0.875rem;
+  border: 0;
   border-radius: 4px 4px 0 0;
   background: transparent;
   color: var(--muted);
   font: 600 var(--step-body) / 1.2 var(--font-body);
   text-align: left;
   cursor: pointer;
+  transition-property: color, background-color, scale;
+  transition-duration: 160ms;
 }
 
 .tr__tab:hover {
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
   color: var(--ink);
 }
 
+/* The selected tab is marked by the sliding ink bar under it (tab-ink.ts). */
 .tr__tab[aria-selected="true"] {
-  border-color: var(--rule);
-  background: var(--paper);
   color: var(--ink);
-  box-shadow: inset 0 3px 0 var(--ink);
 }
 
 .tr__panel {
@@ -214,7 +214,15 @@
     border-radius: 0;
   }
 
-  .tr__tab[aria-selected="true"] {
-    box-shadow: inset 3px 0 0 var(--ink);
+  .tr__tab {
+    border-radius: 0 4px 4px 0;
+  }
+
+  /* Stacked tabs: the ink runs down the left edge instead. */
+  .tr__tabs .tab-ink {
+    width: 3px;
+    height: 1px;
+    transform: translate(calc(var(--tab-x, 0) * 1px), calc(var(--tab-y, 0) * 1px))
+      scaleY(var(--tab-h, 0));
   }
 }

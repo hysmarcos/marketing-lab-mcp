@@ -145,6 +145,9 @@
 }
 
 .pg__tool {
+  transition-property: border-color, box-shadow, padding, scale;
+  transition-duration: 160ms;
+  transition-timing-function: var(--ease-out);
   display: flex;
   flex-direction: column;
   gap: 0.125rem;
@@ -400,25 +403,25 @@ select.field__control {
 
 .pg__tab {
   margin-bottom: -1px;
-  padding: 0.5rem 0.875rem;
-  border: 1px solid transparent;
-  border-bottom: 0;
+  padding: 0.625rem 0.875rem;
+  border: 0;
   border-radius: 4px 4px 0 0;
   background: transparent;
   color: var(--muted);
   font: 600 var(--step-body) / 1.2 var(--font-body);
   cursor: pointer;
+  transition-property: color, background-color, scale;
+  transition-duration: 160ms;
 }
 
 .pg__tab:hover {
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
   color: var(--ink);
 }
 
+/* The selected tab is marked by the sliding ink bar under it (tab-ink.ts). */
 .pg__tab[aria-selected="true"] {
-  border-color: var(--rule);
-  background: var(--paper);
   color: var(--ink);
-  box-shadow: inset 0 3px 0 var(--ink);
 }
 
 .pg__count {
@@ -838,6 +841,39 @@ select.field__control {
   .bars__track {
     grid-column: 1 / -1;
     grid-row: 2;
+  }
+}
+
+/* A new answer: its bars grow from zero (the numbers count up in playground.ts), and new log
+   lines slide in from their side, out (client) from the left and in (server) from the right. */
+@media (prefers-reduced-motion: no-preference) {
+  .result[data-enter] .bars__bar {
+    transform-box: fill-box;
+    transform-origin: left center;
+    animation: viz-grow 480ms var(--ease-out) both;
+    animation-delay: calc(var(--i, 0) * 60ms);
+  }
+
+  .pg__log > .is-new {
+    animation: log-in-out 260ms var(--ease-out) both;
+  }
+
+  .pg__log > .msg--in.is-new {
+    animation-name: log-in-in;
+  }
+}
+
+@keyframes log-in-out {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+}
+
+@keyframes log-in-in {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
   }
 }
 

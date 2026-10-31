@@ -7,6 +7,7 @@ import { LIVE_URL, REPO_URL } from "./config";
 import { renderConnect } from "./connect";
 import { setupHow } from "./how";
 import { canAnimate, EASE_OUT, EASE_SPRING, motionAllowed } from "./motion";
+import { revealOnScroll } from "./reveal";
 import { runnerUnavailable, setPlaygroundStarter } from "./session";
 import { wireToolLinks } from "./tool-links";
 import { loadTranscript, mountTranscripts, renderHeroItems, TRANSCRIPT_IDS } from "./transcripts";
@@ -25,6 +26,16 @@ for (const link of document.querySelectorAll<HTMLAnchorElement>("[data-repo-link
 setupUrlBox(required<HTMLElement>("[data-urlbox]"), LIVE_URL);
 required<HTMLElement>("[data-connect]").append(renderConnect(LIVE_URL, REPO_URL));
 setupHow(required<HTMLElement>("[data-how]"));
+
+// Headings and key blocks below the first screen rise into place once, as they arrive.
+const all = (selector: string) => [...document.querySelectorAll<HTMLElement>(selector)];
+revealOnScroll([
+  ...all(
+    "main .section__title, .how__intro, .bento__intro, [data-transcripts], [data-playground]",
+  ).map((block) => [block]),
+  all(".bento__cell"),
+  all(".connect__intro, .connect__block"),
+]);
 
 // The hero conversation plays after the opening print (base.css): messages arrive one by one on
 // a spring, and each tool ticket feeds out like a printed receipt. With reduced motion everything

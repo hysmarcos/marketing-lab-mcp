@@ -57,7 +57,7 @@ export const abTestPlan: ToolSpec<typeof input, AbTestPlan> = {
   name: "ab_test_plan",
   title: "A/B test sample size planner",
   description:
-    "Use before launching an A/B test to find out how many visitors it needs and how long it will run. Given the baseline conversion rate and the smallest relative lift worth detecting, returns the sample size per variant, the total, and the duration in days when daily traffic is given. Uses the two-proportion normal-approximation formula; adds a Bonferroni correction when there are more than two arms.",
+    "Use before launching an A/B test to find out how many visitors it needs and how long it will run. Given the baseline conversion rate and the smallest relative lift worth detecting, returns the sample size per variant, the total, and the duration in days when daily traffic is given. Also use it after a test, to size a follow-up for a segment whose result was not significant, or to size the holdout experiment that would measure a channel's real incremental effect (attribution models cannot). Uses the two-proportion normal-approximation formula; adds a Bonferroni correction when there are more than two arms.",
   input,
   run: (args) => planAbTest(args),
   summarize,

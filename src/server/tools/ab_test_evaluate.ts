@@ -65,7 +65,7 @@ export const abTestEvaluate: ToolSpec<typeof input, AbTestResult> = {
   name: "ab_test_evaluate",
   title: "A/B test evaluator",
   description:
-    "Use when the user has visitors and conversions for a control and a variant and wants to know if the variant really won. Returns both conversion rates, the absolute and relative lift, a two-sided z-test p-value, a confidence interval for the difference, the Bayesian probability that the variant is better, and a sample ratio mismatch check that flags broken traffic splits. Works from counts only; no data leaves the request.",
+    "Use when the user has visitors and conversions for a control and a variant and wants to know if the variant really won. Returns both conversion rates, the absolute and relative lift, a two-sided z-test p-value, a confidence interval for the difference, the Bayesian probability that the variant is better, and a sample ratio mismatch check that flags broken traffic splits (pass expected_split when the arms were not meant to be equal). Also use it on the overall counts of any experiment analysed with another tool (for example the e-mail test) to confirm the split and get the probability that the variant is better. Works from counts only; no data leaves the request.",
   input,
   run: (args) => evaluateAbTest(args),
   summarize,

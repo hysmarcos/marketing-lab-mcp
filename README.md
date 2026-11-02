@@ -20,7 +20,28 @@ In claude.ai (the free plan allows one custom connector):
 3. Name it `marketing-lab`, paste `https://marketing-lab-mcp.hoyos-marcos.workers.dev/mcp` and click **Continue**.
 4. Click **Continue** again, choose **No sign in** and click **Add**.
 
-Then ask something like "Control: 500 of 10,000 converted. Variant: 570 of 10,000. Did it win?" Claude Desktop uses the same menu. The demo page also shows how to run the server locally and how to call it from the Claude API.
+Then ask something like "Control: 500 of 10,000 converted. Variant: 570 of 10,000. Did it win?" Claude Desktop uses the same menu. The demo page also shows how to call it from the Claude API.
+
+## Run it on your machine
+
+The same server is on npm as [`marketing-lab-mcp`](https://www.npmjs.com/package/marketing-lab-mcp). You need Node.js 20 or newer. This command starts it over stdio for any MCP client that launches a command:
+
+```sh
+npx -y marketing-lab-mcp
+```
+
+- **Claude Code:** `claude mcp add marketing-lab -- npx -y marketing-lab-mcp`
+- **Claude Desktop:** open **Settings → Developer → Edit Config** and add:
+
+```json
+{
+  "mcpServers": {
+    "marketing-lab": { "command": "npx", "args": ["-y", "marketing-lab-mcp"] }
+  }
+}
+```
+
+The server is also listed in the [official MCP Registry](https://registry.modelcontextprotocol.io/) as `io.github.hysmarcos/marketing-lab-mcp`, with both the npm package and the public URL. [`server.json`](server.json) is the listing.
 
 ## The tools
 
@@ -89,6 +110,7 @@ You need Node.js 24 and, to rebuild the data, [uv](https://docs.astral.sh/uv/).
 npm ci
 npm test                      # vitest: core math, MCP contract, Worker, page
 npm run start:stdio           # the server over stdio, for a local MCP client
+npm run build                 # bundles the npm package's bin into dist/stdio.js
 npx vite build                # the demo page, into site/dist
 npx wrangler dev              # the Worker on localhost
 
@@ -122,9 +144,10 @@ MCP (Model Context Protocol) es la forma estándar de darle herramientas a una I
 
 - Probalo en la página: https://hysmarcos.github.io/marketing-lab-mcp/
 - Para usarlo en claude.ai, agregá un conector personalizado con esta URL: `https://marketing-lab-mcp.hoyos-marcos.workers.dev/mcp`. El plan gratis también lo permite.
+- Para correrlo en tu compu, con Node.js 20 o más nuevo: `npx -y marketing-lab-mcp`.
 - Los datos son públicos (Hillstrom, Olist) o simulados (Robyn y los recorridos de atribución). No son datos de una empresa real.
 - La página está en GitHub Pages y el servidor está en el plan gratis de Cloudflare Workers. Mantenerlo no cuesta nada.
 
 ## License
 
-Code: MIT, see [LICENSE](LICENSE). Data files: see [Data and licenses](#data-and-licenses).
+Code: MIT, see [LICENSE](LICENSE). Data files: see [Data and licenses](#data-and-licenses). The npm package bundles the data summaries into its bin, so its license field is `MIT AND CC-BY-NC-SA-4.0`.

@@ -23,10 +23,11 @@ const escapeHtml = (text: string) =>
     (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] ?? c,
   );
 
-export function localCommands(repoUrl: string): string {
-  return [`git clone ${repoUrl}.git`, "cd marketing-lab-mcp", "npm ci", "npm run start:stdio"].join(
-    "\n",
-  );
+/** The npm package; its bin starts the stdio server (src/runtimes/stdio.ts, bundled). */
+export const NPM_PACKAGE = "marketing-lab-mcp";
+
+export function localCommand(): string {
+  return `npx -y ${NPM_PACKAGE}`;
 }
 
 export function desktopConfig(): string {
@@ -35,7 +36,7 @@ export function desktopConfig(): string {
       mcpServers: {
         "marketing-lab": {
           command: "npx",
-          args: ["-y", "tsx", "/ABSOLUTE/PATH/TO/marketing-lab-mcp/src/runtimes/stdio.ts"],
+          args: ["-y", NPM_PACKAGE],
         },
       },
     },
@@ -108,11 +109,11 @@ export function renderConnect(liveUrl: string, repoUrl: string): DocumentFragmen
   </li>
   <li class="connect__block" id="connect-local">
     <h3 class="connect__title">Run it on your machine</h3>
-    <p>Needs git and Node.js 24. The last command starts the server over stdio and waits quietly for a client; stop it with Ctrl+C.</p>
-    ${codeBlock("Terminal", "Copy commands", localCommands(repoUrl))}
-    <p>To let Claude Desktop start it for you, open <b>Settings → Developer → Edit Config</b>, add this with the absolute path to your clone, then quit and reopen Desktop.</p>
+    <p>Needs Node.js 20 or newer. This command downloads the npm package and starts the server over stdio. It waits quietly for a client; stop it with Ctrl+C.</p>
+    ${codeBlock("Terminal", "Copy command", localCommand())}
+    <p>To let Claude Desktop start it for you, open <b>Settings → Developer → Edit Config</b>, add this, then quit and reopen Desktop.</p>
     ${codeBlock("claude_desktop_config.json", "Copy config", desktopConfig())}
-    <p class="connect__aside">On Windows, write the path with forward slashes (<code>C:/Users/you/marketing-lab-mcp/src/runtimes/stdio.ts</code>) or double each backslash. More on local servers in the <a href="${LOCAL_SERVERS_GUIDE_URL}">MCP guide</a>.</p>
+    <p class="connect__aside">To run it from source instead, clone <a href="${repoUrl}">the repository</a>, then run <code>npm ci</code> and <code>npm run start:stdio</code>. More on local servers in the <a href="${LOCAL_SERVERS_GUIDE_URL}">MCP guide</a>.</p>
   </li>
   <li class="connect__block" id="connect-api">
     <h3 class="connect__title">For developers: the Claude API</h3>

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.hysmarcos/marketing-lab-mcp",
+  "title": "Marketing Lab",
+  "description": "Nine marketing tools: A/B tests, e-mail uplift, budget splits, attribution and RFM segments.",
+  "websiteUrl": "https://hysmarcos.github.io/marketing-lab-mcp/",
+  "repository": {
+    "url": "https://github.com/hysmarcos/marketing-lab-mcp",
+    "source": "github"
+  },
+  "version": "0.2.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "marketing-lab-mcp",
+      "version": "0.2.0",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://marketing-lab-mcp.hoyos-marcos.workers.dev/mcp"
+    }
+  ]
+}

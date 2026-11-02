@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from "vitest";
+import pkg from "../../package.json";
 import {
   apiExample,
   desktopConfig,
@@ -50,10 +51,12 @@ describe("renderConnect", () => {
     await vi.waitFor(() => expect(status?.textContent).toBe(COPIED_STATUS));
   });
 
-  it("hints at the Windows path format for the Desktop config", () => {
+  it("runs the npm package and links the source for a manual setup", () => {
     const host = document.createElement("div");
     host.append(renderConnect("", REPO));
-    expect(host.querySelector("#connect-local")?.textContent).toContain("On Windows");
+    const local = host.querySelector("#connect-local");
+    expect(local?.querySelector("code")?.textContent).toBe(`npx -y ${pkg.name}`);
+    expect(local?.querySelector(`a[href="${REPO}"]`)).not.toBeNull();
   });
 
   it("uses the newest MCP connector beta and a toolset that matches the server name", () => {
@@ -64,10 +67,10 @@ describe("renderConnect", () => {
     expect(code).toContain('"mcp_server_name": "marketing-lab"');
   });
 
-  it("gives Claude Desktop valid JSON that launches the stdio runtime", () => {
+  it("gives Claude Desktop valid JSON that launches the npm package", () => {
     const config = JSON.parse(desktopConfig());
     const server = config.mcpServers["marketing-lab"];
     expect(server.command).toBe("npx");
-    expect(server.args.at(-1)).toMatch(/src\/runtimes\/stdio\.ts$/);
+    expect(server.args).toEqual(["-y", pkg.name]);
   });
 });
